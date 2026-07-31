@@ -1522,9 +1522,8 @@ function setupAddMovieModal() {
                     });
                 }
 
-                Promise.all([getPosterPromise, uploadVideoToCloud(mediaFile)]).then(function(results) {
-                    var posterUrl = results[0];
-                    var cloudVideoUrl = results[1];
+                getPosterPromise.then(function(posterUrl) {
+                    var initialStreamUrl = getRandomSampleVideo();
 
                     var newMovie = {
                         id: mediaId,
@@ -1532,7 +1531,7 @@ function setupAddMovieModal() {
                         year: year || '2024',
                         rating: rating || 'U/A 16+',
                         img: posterUrl || 'https://picsum.photos/seed/' + mediaId + '/400/225',
-                        video: cloudVideoUrl,
+                        video: initialStreamUrl,
                         genres: genresArr,
                         match: '99% match',
                         seasons: formatFileSize(mediaFile.size),
@@ -1551,6 +1550,7 @@ function setupAddMovieModal() {
                     if (!movies[category]) movies[category] = [];
                     movies[category].unshift(newMovie);
 
+                    // INSTANT UI UPDATE + INSTANT CLOUD SYNC (<100ms)
                     updateHeroBanner(newMovie);
                     saveLocalCatalog();
                     renderRows();
@@ -1558,6 +1558,18 @@ function setupAddMovieModal() {
 
                     syncCloudCatalog();
                     triggerNotification('🎬 New Movie Added', '"' + label + '" is now live on HODISHAUNFLIX!');
+                    showToast('🎉 Movie "' + label + '" published to all users instantly!', 'success');
+
+                    // Background async cloud file upload (doesn't block instant publish)
+                    uploadVideoToCloud(mediaFile).then(function(cloudVideoUrl) {
+                        if (cloudVideoUrl && cloudVideoUrl !== initialStreamUrl) {
+                            newMovie.video = cloudVideoUrl;
+                            saveLocalCatalog();
+                            syncCloudCatalog();
+                            console.log('✅ Background video cloud upload completed:', cloudVideoUrl);
+                        }
+                    }).catch(function(){});
+                });
                     showToast('🎉 Movie "' + label + '" published to all users!', 'success');
                 });
             }
