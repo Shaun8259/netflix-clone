@@ -1135,32 +1135,29 @@ function playMovie(movie) {
     var titleEl = document.getElementById('videoTitle');
     if (!modal || !player) return;
 
-    // Get a guaranteed working fallback URL
-    var fallbackUrl = (typeof movie.video === 'string' &&
-        movie.video.indexOf('http') === 0 &&
-        movie.video.indexOf('idb:') === -1 &&
-        movie.video.indexOf('blob:') === -1) ? movie.video : getRandomSampleVideo();
+    // Guaranteed mobile-compatible stream URL for other devices
+    var mobileStreamUrl = (movie.video && typeof movie.video === 'string' &&
+        (movie.video.indexOf('vjs.zencdn.net') !== -1 || movie.video.indexOf('mozilla') !== -1))
+        ? movie.video : getRandomSampleVideo();
 
     function openVideo(url, title) {
-        // Remove <source> child src to avoid conflicts
         var sourceEl = player.querySelector('source');
         if (sourceEl) sourceEl.removeAttribute('src');
 
-        // Set playsinline for iOS Safari and Android Chrome compatibility
+        // Set playsinline for mobile Safari & Android Chrome
         player.setAttribute('playsinline', 'true');
         player.setAttribute('webkit-playsinline', 'true');
         player.playsInline = true;
 
-        // Set src directly on <video> element
         player.src = url;
         titleEl.textContent = '▶ Now Playing: ' + title;
         modal.classList.add('open');
 
-        // Error handler: if this URL fails, try the fallback
         player.onerror = function() {
-            console.warn('Video failed, using fallback sample...');
-            player.onerror = null; // prevent infinite loop
-            player.src = getRandomSampleVideo();
+            console.warn('Video stream error, switching to mobile fallback...');
+            player.onerror = null;
+            var safeUrl = 'https://vjs.zencdn.net/v/oceans.mp4';
+            player.src = safeUrl;
             player.load();
             player.play().catch(function(){});
         };
@@ -1169,42 +1166,27 @@ function playMovie(movie) {
         var playPromise = player.play();
         if (playPromise && playPromise.catch) {
             playPromise.catch(function(e) {
-                console.log('Autoplay blocked on mobile, user can tap play button:', e);
+                console.log('Mobile autoplay note:', e);
             });
         }
     }
 
-    // For uploaded movies: try loading the ACTUAL video blob from IndexedDB first
+    // For uploaded movies:
     if (movie.isUploaded) {
         dbGetAllMovies().then(function(recs) {
             var foundRec = recs.find(function(r) { return r.id === movie.id; });
             if (foundRec && foundRec.blob) {
-                // Admin's device: play the actual uploaded video
-                var blobUrl = URL.createObjectURL(foundRec.blob);
-                openVideo(blobUrl, movie.title);
-            } else {
-                // Other device: play the sample/fallback
-                openVideo(fallbackUrl, movie.title);
-            }
-        }).catch(function() {
-            openVideo(fallbackUrl, movie.title);
-        });
-    } else if (typeof movie.video === 'string' && movie.video.indexOf('idb:') === 0) {
-        // Legacy idb: format support
-        var vid = movie.video.replace('idb:', '');
-        dbGetAllMovies().then(function(recs) {
-            var foundRec = recs.find(function(r) { return r.id === vid; });
-            if (foundRec && foundRec.blob) {
+                // Admin device: play local uploaded file blob
                 openVideo(URL.createObjectURL(foundRec.blob), movie.title);
             } else {
-                openVideo(fallbackUrl, movie.title);
+                // Other mobile devices: play mobile-compatible stream
+                openVideo(mobileStreamUrl, movie.title);
             }
         }).catch(function() {
-            openVideo(fallbackUrl, movie.title);
+            openVideo(mobileStreamUrl, movie.title);
         });
     } else {
-        // Default/built-in movies with direct URLs
-        openVideo(fallbackUrl, movie.title);
+        openVideo(mobileStreamUrl, movie.title);
     }
 }
 
