@@ -1,0 +1,345 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>HODISHAUNFLIX - Watch Movies, TV Shows & Wallpapers Online</title>
+    <meta name="description" content="Stream thousands of movies, TV series, wallpapers and exclusive original shows on HODISHAUNFLIX.">
+    <!-- Google Fonts -->
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800;900&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="style.css">
+    <script src="auth.js"></script>
+    <script src="script.js" defer></script>
+</head>
+<body>
+    <!-- Navbar -->
+    <nav class="navbar" id="navbar">
+        <div class="nav-container">
+            <div class="nav-left">
+                <a href="index.html" class="logo">HODISHAUNFLIX</a>
+                <div class="nav-pills nav-links">
+                    <a href="#" class="nav-pill active" data-filter="all">Home</a>
+                    <a href="#" class="nav-pill" data-filter="tv">TV Series</a>
+                    <a href="#" class="nav-pill" data-filter="movies">Movies</a>
+                    <a href="#" class="nav-pill" data-filter="gallery">Gallery</a>
+                    <a href="#" class="nav-pill" data-filter="mylist">My List</a>
+                </div>
+            </div>
+
+            <div class="nav-right">
+                <!-- Add Movie Button (Admin Only) -->
+                <button class="btn-add-movie add-movie-btn admin-only" id="openAddMovieModalBtn">
+                    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><line x1="12" y1="5" x2="12" y2="19"/><line x1="5" y1="12" x2="19" y2="12"/></svg>
+                    + Add Movie
+                </button>
+                <!-- Add Image Button (Admin Only) -->
+                <button class="btn-add-movie add-movie-btn admin-only" id="openAddImageModalBtn" style="background:#2b2b2b;">
+                    🖼️ + Add Image
+                </button>
+
+                <!-- Search Icon -->
+                <button class="icon-btn nav-icon-btn" id="searchBtn" title="Search movies">
+                    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2"><circle cx="11" cy="11" r="8"/><line x1="21" y1="21" x2="16.65" y2="16.65"/></svg>
+                </button>
+
+                <!-- Notification Bell -->
+                <div class="notif-wrapper" id="notifWrapper">
+                    <button class="icon-btn nav-icon-btn" id="notifBtn" title="Notifications">
+                        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2"><path d="M18 8A6 6 0 0 0 6 8c0 7-3 9-3 9h18s-3-2-3-9"/><path d="M13.73 21a2 2 0 0 1-3.46 0"/></svg>
+                        <span class="notif-badge" id="notifBadge">2</span>
+                    </button>
+                    <div class="notif-dropdown" id="notifDropdown">
+                        <div class="notif-header notif-dropdown-header">
+                            <h3>Notifications</h3>
+                            <button class="clear-notifs" id="clearNotifsBtn">Mark all read</button>
+                        </div>
+                        <div class="notif-list" id="notifList"></div>
+                    </div>
+                </div>
+
+                <!-- Profile Avatar & Dropdown -->
+                <div class="profile-wrapper" id="profileWrapper">
+                    <button class="profile-trigger" id="profileTrigger">
+                        <img src="https://picsum.photos/seed/user/32/32" alt="Profile" class="avatar-img">
+                        <span class="caret"></span>
+                    </button>
+                    <div class="profile-dropdown" id="profileDropdown">
+                        <div class="profile-user-info profile-dropdown-header">
+                            <img src="https://picsum.photos/seed/user/40/40" alt="User Avatar" class="avatar-img-lg">
+                            <div class="user-details">
+                                <span class="user-email" id="profileEmail">user@example.com</span>
+                                <span class="user-role-badge role-badge" id="profileRoleBadge">USER</span>
+                            </div>
+                        </div>
+                        <div class="dropdown-divider divider"></div>
+                        <a href="#" class="dropdown-item admin-only" id="clearAllMoviesBtn" style="color:#ff4d4d;">Clear All Movies</a>
+                        <a href="#" class="dropdown-item">Account</a>
+                        <a href="#" class="dropdown-item">Help Center</a>
+                        <div class="dropdown-divider divider"></div>
+                        <button class="dropdown-item btn-logout" id="logoutBtn">Sign out of HODISHAUNFLIX</button>
+                    </div>
+                </div>
+
+                <!-- Hamburger Button -->
+                <button class="hamburger-btn hamburger" id="hamburgerBtn">
+                    <span></span><span></span><span></span>
+                </button>
+            </div>
+        </div>
+    </nav>
+
+    <!-- Mobile Menu -->
+    <div class="mobile-menu" id="mobileMenu">
+        <a href="#" class="mobile-link active" data-filter="all">Home</a>
+        <a href="#" class="mobile-link" data-filter="tv">TV Series</a>
+        <a href="#" class="mobile-link" data-filter="movies">Movies</a>
+        <a href="#" class="mobile-link" data-filter="gallery">Gallery</a>
+        <a href="#" class="mobile-link" data-filter="mylist">My List</a>
+        <a href="#" class="mobile-link admin-only" id="mobileAddMovie" style="color:var(--accent);">+ Add New Movie</a>
+    </div>
+
+    <!-- Hero Banner -->
+    <section class="hero-banner hero" id="heroBanner">
+        <div class="hero-bg" id="heroBg"></div>
+        <div class="hero-content">
+            <span class="hero-series-badge" id="heroBadge">S E R I E S</span>
+            <h1 class="hero-title" id="heroTitle">IKKA</h1>
+            <p class="hero-desc" id="heroDesc">
+                To save a loved one, lawyer Arjun Mehra must do the unthinkable — defend a powerful man accused of a grisly crime. With Tillotama Shome and Dia Mirza.
+            </p>
+            <div class="hero-buttons">
+                <button class="btn-play" id="heroPlayBtn">
+                    <svg viewBox="0 0 24 24" fill="currentColor"><polygon points="5 3 19 12 5 21 5 3"/></svg>
+                    Play
+                </button>
+                <button class="btn-info" id="heroInfoBtn">
+                    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><circle cx="12" cy="12" r="10"/><line x1="12" y1="16" x2="12" y2="12"/><line x1="12" y1="8" x2="12.01" y2="8"/></svg>
+                    More Info
+                </button>
+            </div>
+        </div>
+        <div class="hero-maturity" id="heroMaturity">U/A 16+</div>
+    </section>
+
+    <!-- Content Rows -->
+    <main class="content-section">
+        <!-- Add Movie Banner (Admin Only) -->
+        <div class="add-movie-banner admin-only" id="addMovieBanner">
+            <div class="add-banner-content">
+                <h3>👑 Admin Studio Dashboard</h3>
+                <p>Upload video files and images with custom labels, ratings, and plot summaries.</p>
+            </div>
+            <button class="btn-add-primary" id="bannerAddBtn">
+                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><line x1="12" y1="5" x2="12" y2="19"/><line x1="5" y1="12" x2="19" y2="12"/></svg>
+                + Add New Movie / Media
+            </button>
+        </div>
+
+        <div class="row" id="rowTrending">
+            <div class="row-header"><h2 class="row-title">Trending Now</h2></div>
+            <div class="row-scroll" id="trendingRow"></div>
+        </div>
+        <div class="row" id="rowPopular">
+            <div class="row-header"><h2 class="row-title">Popular on HODISHAUNFLIX</h2></div>
+            <div class="row-scroll" id="popularRow"></div>
+        </div>
+        <div class="row" id="rowAction">
+            <div class="row-header"><h2 class="row-title">Action & Adventure</h2></div>
+            <div class="row-scroll" id="actionRow"></div>
+        </div>
+
+        <!-- IMAGE GALLERY ROW -->
+        <div class="row" id="rowImages">
+            <div class="row-header" style="display:flex; align-items:center; justify-content:space-between;">
+                <h2 class="row-title">🖼️ Movie Stills & Wallpapers Gallery</h2>
+            </div>
+            <div class="row-scroll" id="imagesRow"></div>
+        </div>
+
+        <div class="row" id="rowComedy">
+            <div class="row-header"><h2 class="row-title">Comedy & Feel-Good</h2></div>
+            <div class="row-scroll" id="comedyRow"></div>
+        </div>
+        <div class="row" id="rowPicks">
+            <div class="row-header"><h2 class="row-title">Top Picks for You</h2></div>
+            <div class="row-scroll" id="picksRow"></div>
+        </div>
+    </main>
+
+    <!-- Search Overlay -->
+    <div class="search-overlay" id="searchOverlay">
+        <div class="search-box">
+            <div class="search-header">
+                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2"><circle cx="11" cy="11" r="8"/><line x1="21" y1="21" x2="16.65" y2="16.65"/></svg>
+                <input type="text" id="searchInput" class="search-input" placeholder="Search by title, genre, or keyword..." autocomplete="off">
+                <button class="search-close" id="searchClose">✕</button>
+            </div>
+            <div class="search-results" id="searchResults">
+                <div class="search-empty">Start typing to search...</div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Video Player Modal -->
+    <div class="video-modal" id="videoModal">
+        <div class="video-modal-content">
+            <div class="video-modal-header">
+                <span class="video-title" id="videoTitle">Now Playing</span>
+                <button class="video-close" id="videoClose">✕</button>
+            </div>
+            <div class="video-container">
+                <video id="videoPlayer" controls autoplay>
+                    <source id="videoSource" src="" type="video/mp4">
+                    Your browser does not support the video tag.
+                </video>
+            </div>
+        </div>
+    </div>
+
+    <!-- Image Lightbox Modal with Admin Delete Button -->
+    <div class="image-lightbox-overlay" id="imageLightboxModal">
+        <div class="image-lightbox-card">
+            <button class="image-lightbox-close" id="imageLightboxClose">✕</button>
+            <img id="imageLightboxImg" src="" alt="Movie Still">
+            <div class="image-lightbox-caption">
+                <h3 id="imageLightboxTitle">Movie Title</h3>
+                <p id="imageLightboxDesc">Wallpaper / Still Image</p>
+                <button class="btn-delete-info admin-only" id="imageLightboxDeleteBtn" style="margin-top:12px; background:#e50914;">
+                    🗑️ Delete Image
+                </button>
+            </div>
+        </div>
+    </div>
+
+    <!-- More Info / Details Modal -->
+    <div class="info-modal-overlay" id="infoModal">
+        <div class="info-modal-card">
+            <button class="info-modal-close" id="infoModalClose">✕</button>
+            <div class="info-modal-banner" id="infoModalBanner">
+                <div class="info-banner-overlay">
+                    <h2 id="infoModalTitle">Movie Title</h2>
+                    <div class="info-banner-actions">
+                        <button class="btn-play" id="infoModalPlayBtn">
+                            <svg viewBox="0 0 24 24" fill="currentColor"><polygon points="5 3 19 12 5 21 5 3"/></svg>
+                            Play
+                        </button>
+                        <button class="btn-delete-info admin-only" id="infoModalDeleteBtn">
+                            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="3 6 5 6 21 6"></polyline><path d="M19 6v14a2 2 0 0 1-2 2H7a2 2 0 0 1-2-2V6m3 0V4a2 2 0 0 1 2-2h4a2 2 0 0 1 2 2v2"></path></svg>
+                            Delete Movie
+                        </button>
+                    </div>
+                </div>
+            </div>
+            <div class="info-modal-body">
+                <div class="info-meta-row">
+                    <span class="match" id="infoModalMatch">98% match</span>
+                    <span class="maturity" id="infoModalRating">U/A 16+</span>
+                    <span id="infoModalYear">2024</span>
+                    <span class="quality">HD</span>
+                </div>
+                <p class="info-desc" id="infoModalDesc">Description of the movie...</p>
+                <div class="info-genres" id="infoModalGenres"><strong>Genres:</strong> Drama, Action</div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Add Movie & Media Modal (Admin Only) -->
+    <div class="add-movie-overlay" id="addMovieModal">
+        <div class="add-movie-card">
+            <div class="add-movie-header">
+                <h2>🎬 Admin Studio — Add Movie or Image</h2>
+                <button class="add-movie-close" id="closeAddMovieModalBtn">✕</button>
+            </div>
+            <form id="addMovieForm" class="add-movie-form">
+                <div class="form-grid">
+                    <div class="form-group full-width">
+                        <label for="movieLabelInput">Title / Label <span class="required">*</span></label>
+                        <input type="text" id="movieLabelInput" placeholder="e.g. IKKA, Stranger Worlds Still" required>
+                    </div>
+
+                    <div class="form-group">
+                        <label for="movieCategorySelect">Category Row</label>
+                        <select id="movieCategorySelect">
+                            <option value="trending">Trending Now</option>
+                            <option value="popular">Popular Series</option>
+                            <option value="action">Action & Adventure</option>
+                            <option value="images">🖼️ Wallpaper / Image Gallery</option>
+                            <option value="comedy">Comedy & Feel-Good</option>
+                            <option value="picks">Top Picks</option>
+                        </select>
+                    </div>
+
+                    <div class="form-group">
+                        <label for="movieRatingSelect">Maturity Rating</label>
+                        <select id="movieRatingSelect">
+                            <option value="U/A 16+">U/A 16+</option>
+                            <option value="U/A 13+">U/A 13+</option>
+                            <option value="U/A 18+ [A]">U/A 18+ [A]</option>
+                            <option value="U">U (All Ages)</option>
+                        </select>
+                    </div>
+
+                    <div class="form-group">
+                        <label for="movieYearInput">Release Year</label>
+                        <input type="number" id="movieYearInput" value="2024">
+                    </div>
+
+                    <div class="form-group">
+                        <label for="movieGenreInput">Genres (comma separated)</label>
+                        <input type="text" id="movieGenreInput" placeholder="Action, Drama, Thriller">
+                    </div>
+
+                    <div class="form-group full-width">
+                        <label for="movieDescInput">Description / Plot Summary</label>
+                        <textarea id="movieDescInput" rows="2" placeholder="Brief plot summary or image description..."></textarea>
+                    </div>
+
+                    <div class="form-group full-width">
+                        <label>Media File (Video MP4 or Image Wallpaper) <span class="required">*</span></label>
+                        <div class="file-drop-zone" id="fileDropZone">
+                            <div class="drop-icon">
+                                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/><polyline points="17 8 12 3 7 8"/><line x1="12" y1="3" x2="12" y2="15"/></svg>
+                            </div>
+                            <span id="videoFileStatus">Click or drag & drop video or image here</span>
+                            <input type="file" id="movieVideoFile" accept="video/*,image/*" style="display:none;" required>
+                        </div>
+                    </div>
+
+                    <div class="form-group full-width">
+                        <label for="moviePosterFile">Custom Poster / Thumbnail (Optional for video)</label>
+                        <input type="file" id="moviePosterFile" accept="image/*" class="file-input-simple">
+                    </div>
+                </div>
+
+                <div class="form-actions">
+                    <button type="button" class="btn-cancel" id="cancelAddMovieBtn">Cancel</button>
+                    <button type="submit" class="btn-submit">
+                        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><polyline points="20 6 9 17 4 12"/></svg>
+                        Publish Media
+                    </button>
+                </div>
+            </form>
+        </div>
+    </div>
+
+    <!-- Toast Notification -->
+    <div class="toast" id="toast"></div>
+
+    <!-- Footer -->
+    <footer class="footer">
+        <div class="footer-social">
+            <svg viewBox="0 0 24 24" fill="currentColor"><path d="M18 2h-3a5 5 0 0 0-5 5v3H7v4h3v8h4v-8h3l1-4h-4V7a1 1 0 0 1 1-1h3z"/></svg>
+            <svg viewBox="0 0 24 24" fill="currentColor"><rect x="2" y="2" width="20" height="20" rx="5" ry="5"/><path d="M16 11.37A4 4 0 1 1 12.63 8 4 4 0 0 1 16 11.37z"/><line x1="17.5" y1="6.5" x2="17.51" y2="6.5"/></svg>
+            <svg viewBox="0 0 24 24" fill="currentColor"><path d="M23 3a10.9 10.9 0 0 1-3.14 1.53 4.48 4.48 0 0 0-7.86 3v1A10.66 10.66 0 0 1 3 4s-4 9 5 13a11.64 11.64 0 0 1-7 2c9 5 20 0 20-11.5a4.5 4.5 0 0 0-.08-.83A7.72 7.72 0 0 0 23 3z"/></svg>
+        </div>
+        <div class="footer-links">
+            <a href="#">Audio Description</a><a href="#">Help Centre</a><a href="#">Gift Cards</a><a href="#">Media Centre</a>
+            <a href="#">Investor Relations</a><a href="#">Jobs</a><a href="#">Terms of Use</a><a href="#">Privacy</a>
+            <a href="#">Legal Notices</a><a href="#">Cookie Preferences</a><a href="#">Corporate Information</a><a href="#">Contact Us</a>
+        </div>
+        <div class="footer-copy">© 2024 HODISHAUNFLIX, Inc. All rights reserved.</div>
+    </footer>
+</body>
+</html>

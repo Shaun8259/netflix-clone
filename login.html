@@ -1,0 +1,127 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>HODISHAUNFLIX - Sign In</title>
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;700&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="login.css">
+</head>
+<body>
+    <div class="background-container"></div>
+    
+    <div class="header">
+        <a href="#" class="logo">HODISHAUNFLIX</a>
+    </div>
+
+    <div class="login-wrapper">
+        <div class="login-card">
+            <h1 id="form-title">Sign In</h1>
+            <div id="error-message" class="error-message"></div>
+            
+            <form id="auth-form">
+                <div class="input-group">
+                    <input type="email" id="email" placeholder="Email or phone number" required>
+                </div>
+                <div class="input-group">
+                    <input type="password" id="password" placeholder="Password" required>
+                </div>
+                <div class="input-group" id="confirm-password-group" style="display: none;">
+                    <input type="password" id="confirm-password" placeholder="Confirm Password">
+                </div>
+                
+                <button type="submit" id="submit-btn">Sign In</button>
+                
+                <div class="form-help">
+                    <div class="remember-me">
+                        <input type="checkbox" id="remember" checked>
+                        <label for="remember">Remember me</label>
+                    </div>
+                </div>
+            </form>
+            
+            <div class="signup-now">
+                <span id="toggle-text">New to HODISHAUNFLIX?</span> 
+                <a href="#" id="toggle-mode">Sign up now.</a>
+            </div>
+            
+            <div class="captcha-notice">
+                This page is protected by Google reCAPTCHA to ensure you're not a bot. 
+                <a href="#">Learn more.</a>
+            </div>
+        </div>
+        
+        <div class="footer">
+            <p>This is a demo project. &copy; 2024 HODISHAUNFLIX</p>
+        </div>
+    </div>
+
+    <script src="auth.js"></script>
+    <script>
+        document.addEventListener('DOMContentLoaded', () => {
+            requireNoAuth();
+
+            let isSignUpMode = false;
+            
+            const form = document.getElementById('auth-form');
+            const title = document.getElementById('form-title');
+            const submitBtn = document.getElementById('submit-btn');
+            const confirmPassGroup = document.getElementById('confirm-password-group');
+            const confirmPassInput = document.getElementById('confirm-password');
+            const toggleText = document.getElementById('toggle-text');
+            const toggleLink = document.getElementById('toggle-mode');
+            const errorMsg = document.getElementById('error-message');
+
+            toggleLink.addEventListener('click', (e) => {
+                e.preventDefault();
+                isSignUpMode = !isSignUpMode;
+                errorMsg.style.display = 'none';
+                
+                if (isSignUpMode) {
+                    title.textContent = 'Sign Up';
+                    submitBtn.textContent = 'Sign Up';
+                    confirmPassGroup.style.display = 'block';
+                    confirmPassInput.required = true;
+                    toggleText.textContent = 'Already have an account?';
+                    toggleLink.textContent = 'Sign in.';
+                } else {
+                    title.textContent = 'Sign In';
+                    submitBtn.textContent = 'Sign In';
+                    confirmPassGroup.style.display = 'none';
+                    confirmPassInput.required = false;
+                    toggleText.textContent = 'New to HODISHAUNFLIX?';
+                    toggleLink.textContent = 'Sign up now.';
+                }
+            });
+
+            form.addEventListener('submit', (e) => {
+                e.preventDefault();
+                errorMsg.style.display = 'none';
+                
+                const email = document.getElementById('email').value;
+                const password = document.getElementById('password').value;
+                const rememberMe = document.getElementById('remember') ? document.getElementById('remember').checked : true;
+
+                try {
+                    if (isSignUpMode) {
+                        const confirmPassword = confirmPassInput.value;
+                        if (password !== confirmPassword) {
+                            throw new Error('Passwords do not match');
+                        }
+                        signUp(email, password, rememberMe);
+                    } else {
+                        login(email, password, rememberMe);
+                    }
+                    // Redirect to index.html on success
+                    window.location.href = 'index.html';
+                } catch (err) {
+                    errorMsg.textContent = err.message;
+                    errorMsg.style.display = 'block';
+                }
+            });
+        });
+    </script>
+</body>
+</html>

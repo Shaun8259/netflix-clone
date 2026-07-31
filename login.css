@@ -1,0 +1,220 @@
+* {
+    box-sizing: border-box;
+    margin: 0;
+    padding: 0;
+}
+
+body {
+    font-family: 'Inter', sans-serif;
+    background-color: #000;
+    color: white;
+    min-height: 100vh;
+    display: flex;
+    flex-direction: column;
+}
+
+.background-container {
+    position: fixed;
+    top: 0;
+    left: 0;
+    width: 100vw;
+    height: 100vh;
+    z-index: -1;
+    background: linear-gradient(0deg, rgba(0,0,0,0.8) 0%, rgba(0,0,0,0.4) 50%, rgba(0,0,0,0.8) 100%),
+                linear-gradient(45deg, #0f0c29, #302b63, #24243e, #0a0a0a);
+    background-size: 400% 400%;
+    animation: gradientShift 15s ease infinite;
+}
+
+@keyframes gradientShift {
+    0% { background-position: 0% 50%; }
+    50% { background-position: 100% 50%; }
+    100% { background-position: 0% 50%; }
+}
+
+.header {
+    height: 90px;
+    padding: 0 3%;
+    display: flex;
+    align-items: center;
+}
+
+.logo {
+    color: #e50914;
+    text-decoration: none;
+    font-size: 40px;
+    font-weight: 700;
+    letter-spacing: 1px;
+}
+
+.login-wrapper {
+    flex-grow: 1;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    padding-bottom: 90px;
+}
+
+.login-card {
+    background-color: rgba(0, 0, 0, 0.75);
+    border-radius: 4px;
+    padding: 60px 68px;
+    width: 100%;
+    max-width: 450px;
+    margin-bottom: 90px;
+    animation: fadeIn 0.5s ease-out forwards;
+}
+
+@keyframes fadeIn {
+    from { opacity: 0; transform: translateY(10px); }
+    to { opacity: 1; transform: translateY(0); }
+}
+
+.login-card h1 {
+    font-size: 32px;
+    font-weight: 700;
+    margin-bottom: 28px;
+}
+
+.input-group {
+    margin-bottom: 16px;
+}
+
+.input-group input {
+    width: 100%;
+    background-color: #333;
+    border: none;
+    border-radius: 4px;
+    padding: 16px 20px;
+    font-size: 16px;
+    color: white;
+    font-family: inherit;
+    outline: none;
+}
+
+.input-group input::placeholder {
+    color: #8c8c8c;
+}
+
+.input-group input:focus {
+    outline: 2px solid #e50914;
+    background-color: #444;
+}
+
+button[type="submit"] {
+    width: 100%;
+    padding: 16px;
+    background-color: #e50914;
+    color: white;
+    border: none;
+    border-radius: 4px;
+    font-size: 16px;
+    font-weight: 700;
+    cursor: pointer;
+    margin-top: 24px;
+    margin-bottom: 12px;
+    transition: background-color 0.2s;
+    font-family: inherit;
+}
+
+button[type="submit"]:hover {
+    background-color: #f6121d;
+}
+
+.form-help {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    color: #b3b3b3;
+    font-size: 13px;
+    margin-bottom: 40px;
+}
+
+.remember-me {
+    display: flex;
+    align-items: center;
+}
+
+.remember-me input[type="checkbox"] {
+    margin-right: 5px;
+    width: 16px;
+    height: 16px;
+    accent-color: #737373;
+}
+
+.signup-now {
+    color: #737373;
+    font-size: 16px;
+    margin-bottom: 11px;
+}
+
+.signup-now a {
+    color: white;
+    text-decoration: none;
+}
+
+.signup-now a:hover {
+    text-decoration: underline;
+}
+
+.captcha-notice {
+    color: #8c8c8c;
+    font-size: 13px;
+    line-height: 1.5;
+}
+
+.captcha-notice a {
+    color: #0071eb;
+    text-decoration: none;
+}
+
+.captcha-notice a:hover {
+    text-decoration: underline;
+}
+
+.error-message {
+    background-color: #e87c03;
+    color: white;
+    padding: 10px 20px;
+    border-radius: 4px;
+    margin-bottom: 16px;
+    font-size: 14px;
+    display: none;
+}
+
+.footer {
+    width: 100%;
+    background-color: rgba(0, 0, 0, 0.75);
+    padding: 30px;
+    color: #737373;
+    text-align: center;
+    font-size: 14px;
+    position: absolute;
+    bottom: 0;
+}
+
+@media (max-width: 740px) {
+    .header {
+        height: 75px;
+    }
+    
+    .logo {
+        font-size: 32px;
+    }
+    
+    .login-card {
+        padding: 48px 32px;
+        max-width: 100%;
+        background-color: #000;
+        margin-bottom: 0;
+    }
+    
+    .footer {
+        background-color: #000;
+        position: relative;
+    }
+    
+    .background-container {
+        display: none; /* Mobile app normally has pure black bg */
+    }
+}
