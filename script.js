@@ -312,56 +312,93 @@ function mergeCloudCatalog(data) {
 }
 
 function fetchCloudCatalog() {
-    return fetch(LOCAL_API_URL, { cache: 'no-cache' })
+    // On Vercel (no local server), go directly to cloud API
+    // On localhost, try local API first (faster), then cloud as backup
+    var isLocalhost = window.location.hostname === 'localhost' || window.location.hostname === '127.0.0.1';
+
+    if (isLocalhost) {
+        return fetch(LOCAL_API_URL, { cache: 'no-cache' })
+            .then(function(res) {
+                if (!res.ok) throw new Error('Local API unavailable');
+                return res.json();
+            })
+            .then(function(data) {
+                if (data && (data.trending || data.images)) {
+                    mergeCloudCatalog(data);
+                    return;
+                }
+                throw new Error('Empty local response');
+            })
+            .catch(function() {
+                return fetchFromCloud();
+            });
+    } else {
+        return fetchFromCloud();
+    }
+}
+
+function fetchFromCloud() {
+    return fetch(CLOUD_API_URL, { cache: 'no-cache' })
         .then(function(res) {
-            if (!res.ok) throw new Error('Local API unavailable');
+            if (!res.ok) throw new Error('Cloud fetch error: ' + res.status);
             return res.json();
         })
         .then(function(data) {
-            if (data && (data.trending || data.images)) {
+            if (data && typeof data === 'object') {
+                console.log('☁️ Cloud catalog loaded successfully');
                 mergeCloudCatalog(data);
-                return;
             }
-            throw new Error('Empty local response');
         })
-        .catch(function() {
-            return fetch(CLOUD_API_URL, { cache: 'no-cache' })
-                .then(function(res) {
-                    if (!res.ok) throw new Error('Cloud fetch error');
-                    return res.json();
-                })
-                .then(function(data) {
-                    mergeCloudCatalog(data);
-                })
-                .catch(function(err) {
-                    console.log('Using local fallback catalog:', err);
-                });
+        .catch(function(err) {
+            console.warn('Cloud fetch failed:', err);
         });
 }
 
 function syncCloudCatalog() {
     saveLocalCatalog();
-    var payload = JSON.stringify(movies);
 
-    // Sync to local server API (0ms latency, zero rate limits)
+    // Create a LIGHTWEIGHT copy for cloud sync (strip base64 images to stay under jsonblob size limit)
+    var cloudPayload = JSON.parse(JSON.stringify(movies));
+    var keys = ['trending', 'popular', 'action', 'comedy', 'picks', 'images'];
+    keys.forEach(function(k) {
+        if (!Array.isArray(cloudPayload[k])) return;
+        cloudPayload[k].forEach(function(item) {
+            // Replace base64 data URLs with small placeholder URLs
+            if (item.img && typeof item.img === 'string' && item.img.indexOf('data:') === 0) {
+                item.img = 'https://picsum.photos/seed/' + encodeURIComponent(item.id) + '/400/225';
+            }
+            // Remove heavy fields not needed for cloud sync
+            delete item.videoBase64;
+        });
+    });
+
+    var payload = JSON.stringify(cloudPayload);
+    console.log('Cloud sync payload size:', (payload.length / 1024).toFixed(1) + 'KB');
+
+    // Sync to local server API
     fetch(LOCAL_API_URL, {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
-        body: payload
+        body: JSON.stringify(movies) // local API can handle full data
     }).catch(function(){});
 
-    // Sync to cloud API
+    // Sync to cloud API (lightweight payload)
     return fetch(CLOUD_API_URL, {
         method: 'PUT',
         headers: { 'Content-Type': 'application/json' },
         body: payload
     })
     .then(function(res) {
-        if (!res.ok) console.warn('Cloud sync HTTP status:', res.status);
-        else console.log('Cloud catalog updated across all devices!');
+        if (!res.ok) {
+            console.error('Cloud sync FAILED! HTTP status:', res.status);
+            showToast('⚠️ Cloud sync failed (status ' + res.status + ')', 'error');
+        } else {
+            console.log('✅ Cloud catalog synced! All users will see updates.');
+        }
     })
     .catch(function(err) {
-        console.error('Failed to sync to cloud:', err);
+        console.error('Cloud sync error:', err);
+        showToast('⚠️ Cloud sync failed - check internet connection', 'error');
     });
 }
 
