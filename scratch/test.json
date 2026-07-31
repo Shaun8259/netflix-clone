@@ -1,0 +1,22 @@
+{
+  "trending": [
+    {
+      "id": "m_ikka",
+      "title": "IKKA",
+      "year": "2024",
+      "rating": "U/A 16+",
+      "img": "https://picsum.photos/seed/ikka/400/225",
+      "video": "https://commondatastorage.googleapis.com/gtv-videos-bucket/sample/BigBuckBunny.mp4",
+      "genres": ["Legal", "Drama", "Thriller"],
+      "match": "98% match",
+      "seasons": "1 Season",
+      "desc": "To save a loved one, lawyer Arjun Mehra must do the unthinkable - defend a powerful man accused of a grisly crime."
+    }
+  ],
+  "popular": [],
+  "action": [],
+  "images": [],
+  "comedy": [],
+  "picks": [],
+  "deletedIds": []
+}

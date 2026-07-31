@@ -2,8 +2,8 @@
 
 // ===== SHARED REAL-TIME DATABASE ENDPOINTS =====
 var LOCAL_API_URL = '/api/catalog';
-var CLOUD_API_URL = 'https://jsonblob.com/api/jsonBlob/019fb6fb-3bb6-73f4-9a26-3fdf83f74dbe';
-var LOCAL_CATALOG_KEY = 'hodishaunflix_local_catalog_v8';
+var CLOUD_API_URL = 'https://jsonblob.com/api/jsonBlob/019fba03-4f37-74ec-b42d-84ce7be97abc';
+var LOCAL_CATALOG_KEY = 'hodishaunflix_local_catalog_v10';
 
 // ===== REAL MOVIES & IMAGES CATALOG =====
 var defaultMovies = {
