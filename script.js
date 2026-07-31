@@ -357,17 +357,12 @@ function fetchFromCloud() {
 function syncCloudCatalog() {
     saveLocalCatalog();
 
-    // Create a LIGHTWEIGHT copy for cloud sync (strip base64 images to stay under jsonblob size limit)
     var cloudPayload = JSON.parse(JSON.stringify(movies));
     var keys = ['trending', 'popular', 'action', 'comedy', 'picks', 'images'];
     keys.forEach(function(k) {
         if (!Array.isArray(cloudPayload[k])) return;
         cloudPayload[k].forEach(function(item) {
-            // Replace base64 data URLs with small placeholder URLs
-            if (item.img && typeof item.img === 'string' && item.img.indexOf('data:') === 0) {
-                item.img = 'https://picsum.photos/seed/' + encodeURIComponent(item.id) + '/400/225';
-            }
-            // Remove heavy fields not needed for cloud sync
+            // Remove heavy binary fields not needed for cloud sync
             delete item.videoBase64;
         });
     });
@@ -1153,6 +1148,11 @@ function playMovie(movie) {
         var sourceEl = player.querySelector('source');
         if (sourceEl) sourceEl.removeAttribute('src');
 
+        // Set playsinline for iOS Safari and Android Chrome compatibility
+        player.setAttribute('playsinline', 'true');
+        player.setAttribute('webkit-playsinline', 'true');
+        player.playsInline = true;
+
         // Set src directly on <video> element
         player.src = url;
         titleEl.textContent = '▶ Now Playing: ' + title;
@@ -1171,7 +1171,7 @@ function playMovie(movie) {
         var playPromise = player.play();
         if (playPromise && playPromise.catch) {
             playPromise.catch(function(e) {
-                console.log('Autoplay blocked, user can press play manually:', e);
+                console.log('Autoplay blocked on mobile, user can tap play button:', e);
             });
         }
     }
@@ -1451,7 +1451,7 @@ function setupAddMovieModal() {
             if (isImageFile) {
                 var reader = new FileReader();
                 reader.onload = function(evt) {
-                    compressImage(evt.target.result, 600, 337, 0.75).then(function(compressedImg) {
+                    compressImage(evt.target.result, 320, 180, 0.6).then(function(compressedImg) {
                         var newImgObj = {
                             id: mediaId,
                             title: label,
@@ -1485,13 +1485,13 @@ function setupAddMovieModal() {
                     getPosterPromise = new Promise(function(res) {
                         var r = new FileReader();
                         r.onload = function(evt) {
-                            compressImage(evt.target.result, 400, 225, 0.75).then(res);
+                            compressImage(evt.target.result, 320, 180, 0.6).then(res);
                         };
                         r.readAsDataURL(posterInput.files[0]);
                     });
                 } else {
                     getPosterPromise = generateThumbnail(mediaFile).then(function(rawThumb) {
-                        return compressImage(rawThumb, 400, 225, 0.75);
+                        return compressImage(rawThumb, 320, 180, 0.6);
                     });
                 }
 
