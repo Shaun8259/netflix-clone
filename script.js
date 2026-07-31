@@ -1087,33 +1087,51 @@ function getRandomSampleVideo() {
 
 // ===== VIDEO PLAYER & LIGHTBOX =====
 function playMovie(movie) {
-    if (!movie || !movie.video) {
-        showToast('No video attached to this media', 'error');
+    if (!movie) {
+        showToast('No media selected', 'error');
         return;
     }
 
     var modal = document.getElementById('videoModal');
     var player = document.getElementById('videoPlayer');
-    var source = document.getElementById('videoSource');
     var titleEl = document.getElementById('videoTitle');
-    if (!modal) return;
+    if (!modal || !player) return;
+
+    // Determine a valid playable URL
+    var videoUrl = movie.video || '';
+
+    // Check if URL is a valid streamable http(s) URL
+    var isValidUrl = typeof videoUrl === 'string' &&
+        (videoUrl.indexOf('http://') === 0 || videoUrl.indexOf('https://') === 0) &&
+        videoUrl.indexOf('idb:') === -1 &&
+        videoUrl.indexOf('blob:') === -1;
+
+    if (!isValidUrl) {
+        // Not a valid streaming URL - use sample fallback
+        videoUrl = getRandomSampleVideo();
+    }
 
     function openVideo(url, title) {
-        source.src = url;
+        // Remove <source> element and set src directly on <video> (more reliable)
+        var sourceEl = player.querySelector('source');
+        if (sourceEl) sourceEl.removeAttribute('src');
+
+        player.src = url;
         player.load();
         titleEl.textContent = '▶ Now Playing: ' + title;
         modal.classList.add('open');
 
-        // Add error handler: if video URL fails, fallback to sample video
+        // Error handler: if video fails, try another sample
         player.onerror = function() {
-            console.warn('Video failed to load, using sample fallback');
-            var fallback = getRandomSampleVideo();
-            source.src = fallback;
+            console.warn('Video load failed, trying fallback...');
+            player.src = getRandomSampleVideo();
             player.load();
             player.play().catch(function(){});
         };
 
-        player.play().catch(function(e) { console.log('Autoplay error:', e); });
+        player.play().catch(function(e) {
+            console.log('Autoplay blocked, user can press play:', e);
+        });
     }
 
     if (typeof movie.video === 'string' && movie.video.indexOf('idb:') === 0) {
@@ -1122,22 +1140,14 @@ function playMovie(movie) {
             var foundRec = recs.find(function(r) { return r.id === vid; });
             if (foundRec && foundRec.blob) {
                 openVideo(URL.createObjectURL(foundRec.blob), movie.title);
-            } else if (movie.videoBase64) {
-                openVideo(movie.videoBase64, movie.title);
             } else {
-                // Fallback: play a sample video instead of showing error
-                var fallbackUrl = getRandomSampleVideo();
-                openVideo(fallbackUrl, movie.title);
+                openVideo(getRandomSampleVideo(), movie.title);
             }
         }).catch(function() {
-            // IndexedDB failed entirely - use sample fallback
             openVideo(getRandomSampleVideo(), movie.title);
         });
-    } else if (movie.video && movie.video.indexOf('blob:') === 0) {
-        // Blob URLs are local-only and won't work on other devices
-        openVideo(getRandomSampleVideo(), movie.title);
     } else {
-        openVideo(movie.video, movie.title);
+        openVideo(videoUrl, movie.title);
     }
 }
 
@@ -1178,7 +1188,8 @@ function setupVideoPlayer() {
     function closeVideo() {
         player.pause();
         player.currentTime = 0;
-        source.src = '';
+        player.removeAttribute('src');
+        player.load();
         modal.classList.remove('open');
     }
 
