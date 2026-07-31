@@ -1097,57 +1097,71 @@ function playMovie(movie) {
     var titleEl = document.getElementById('videoTitle');
     if (!modal || !player) return;
 
-    // Determine a valid playable URL
-    var videoUrl = movie.video || '';
-
-    // Check if URL is a valid streamable http(s) URL
-    var isValidUrl = typeof videoUrl === 'string' &&
-        (videoUrl.indexOf('http://') === 0 || videoUrl.indexOf('https://') === 0) &&
-        videoUrl.indexOf('idb:') === -1 &&
-        videoUrl.indexOf('blob:') === -1;
-
-    if (!isValidUrl) {
-        // Not a valid streaming URL - use sample fallback
-        videoUrl = getRandomSampleVideo();
-    }
+    // Get a guaranteed working fallback URL
+    var fallbackUrl = (typeof movie.video === 'string' &&
+        movie.video.indexOf('http') === 0 &&
+        movie.video.indexOf('idb:') === -1 &&
+        movie.video.indexOf('blob:') === -1) ? movie.video : getRandomSampleVideo();
 
     function openVideo(url, title) {
-        // Remove <source> element and set src directly on <video> (more reliable)
+        // Remove <source> child src to avoid conflicts
         var sourceEl = player.querySelector('source');
         if (sourceEl) sourceEl.removeAttribute('src');
 
+        // Set src directly on <video> element
         player.src = url;
-        player.load();
         titleEl.textContent = '▶ Now Playing: ' + title;
         modal.classList.add('open');
 
-        // Error handler: if video fails, try another sample
+        // Error handler: if this URL fails, try the fallback
         player.onerror = function() {
-            console.warn('Video load failed, trying fallback...');
+            console.warn('Video failed, using fallback sample...');
+            player.onerror = null; // prevent infinite loop
             player.src = getRandomSampleVideo();
             player.load();
             player.play().catch(function(){});
         };
 
-        player.play().catch(function(e) {
-            console.log('Autoplay blocked, user can press play:', e);
-        });
+        player.load();
+        var playPromise = player.play();
+        if (playPromise && playPromise.catch) {
+            playPromise.catch(function(e) {
+                console.log('Autoplay blocked, user can press play manually:', e);
+            });
+        }
     }
 
-    if (typeof movie.video === 'string' && movie.video.indexOf('idb:') === 0) {
+    // For uploaded movies: try loading the ACTUAL video blob from IndexedDB first
+    if (movie.isUploaded) {
+        dbGetAllMovies().then(function(recs) {
+            var foundRec = recs.find(function(r) { return r.id === movie.id; });
+            if (foundRec && foundRec.blob) {
+                // Admin's device: play the actual uploaded video
+                var blobUrl = URL.createObjectURL(foundRec.blob);
+                openVideo(blobUrl, movie.title);
+            } else {
+                // Other device: play the sample/fallback
+                openVideo(fallbackUrl, movie.title);
+            }
+        }).catch(function() {
+            openVideo(fallbackUrl, movie.title);
+        });
+    } else if (typeof movie.video === 'string' && movie.video.indexOf('idb:') === 0) {
+        // Legacy idb: format support
         var vid = movie.video.replace('idb:', '');
         dbGetAllMovies().then(function(recs) {
             var foundRec = recs.find(function(r) { return r.id === vid; });
             if (foundRec && foundRec.blob) {
                 openVideo(URL.createObjectURL(foundRec.blob), movie.title);
             } else {
-                openVideo(getRandomSampleVideo(), movie.title);
+                openVideo(fallbackUrl, movie.title);
             }
         }).catch(function() {
-            openVideo(getRandomSampleVideo(), movie.title);
+            openVideo(fallbackUrl, movie.title);
         });
     } else {
-        openVideo(videoUrl, movie.title);
+        // Default/built-in movies with direct URLs
+        openVideo(fallbackUrl, movie.title);
     }
 }
 
