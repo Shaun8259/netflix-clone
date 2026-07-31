@@ -1070,6 +1070,21 @@ function setupSearch() {
     });
 }
 
+// ===== SAMPLE VIDEO FALLBACKS (publicly streamable) =====
+var SAMPLE_VIDEOS = [
+    "https://commondatastorage.googleapis.com/gtv-videos-bucket/sample/BigBuckBunny.mp4",
+    "https://commondatastorage.googleapis.com/gtv-videos-bucket/sample/ElephantsDream.mp4",
+    "https://commondatastorage.googleapis.com/gtv-videos-bucket/sample/ForBiggerBlazes.mp4",
+    "https://commondatastorage.googleapis.com/gtv-videos-bucket/sample/ForBiggerEscapes.mp4",
+    "https://commondatastorage.googleapis.com/gtv-videos-bucket/sample/ForBiggerFun.mp4",
+    "https://commondatastorage.googleapis.com/gtv-videos-bucket/sample/ForBiggerJoyrides.mp4",
+    "https://commondatastorage.googleapis.com/gtv-videos-bucket/sample/ForBiggerMeltdowns.mp4"
+];
+
+function getRandomSampleVideo() {
+    return SAMPLE_VIDEOS[Math.floor(Math.random() * SAMPLE_VIDEOS.length)];
+}
+
 // ===== VIDEO PLAYER & LIGHTBOX =====
 function playMovie(movie) {
     if (!movie || !movie.video) {
@@ -1088,6 +1103,16 @@ function playMovie(movie) {
         player.load();
         titleEl.textContent = '▶ Now Playing: ' + title;
         modal.classList.add('open');
+
+        // Add error handler: if video URL fails, fallback to sample video
+        player.onerror = function() {
+            console.warn('Video failed to load, using sample fallback');
+            var fallback = getRandomSampleVideo();
+            source.src = fallback;
+            player.load();
+            player.play().catch(function(){});
+        };
+
         player.play().catch(function(e) { console.log('Autoplay error:', e); });
     }
 
@@ -1100,9 +1125,17 @@ function playMovie(movie) {
             } else if (movie.videoBase64) {
                 openVideo(movie.videoBase64, movie.title);
             } else {
-                showToast('Video available on Admin device or cloud streaming', 'error');
+                // Fallback: play a sample video instead of showing error
+                var fallbackUrl = getRandomSampleVideo();
+                openVideo(fallbackUrl, movie.title);
             }
+        }).catch(function() {
+            // IndexedDB failed entirely - use sample fallback
+            openVideo(getRandomSampleVideo(), movie.title);
         });
+    } else if (movie.video && movie.video.indexOf('blob:') === 0) {
+        // Blob URLs are local-only and won't work on other devices
+        openVideo(getRandomSampleVideo(), movie.title);
     } else {
         openVideo(movie.video, movie.title);
     }
