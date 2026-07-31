@@ -1369,45 +1369,46 @@ function openInfoModal(movie) {
 }
 
 function uploadVideoToCloud(file) {
-    showToast('☁️ Streaming your video to cloud server...', 'info');
+    showToast('☁️ Uploading video to cloud stream server...', 'info');
     return new Promise(function(resolve) {
-        var formData = new FormData();
-        formData.append('reqtype', 'fileupload');
-        formData.append('fileToUpload', file);
+        var fd = new FormData();
+        fd.append('file', file);
 
-        fetch('https://catbox.moe/user/api.php', {
+        // 1. Try tmpfiles.org (CORS enabled for browser uploads)
+        fetch('https://tmpfiles.org/api/v1/upload', {
             method: 'POST',
-            body: formData
+            body: fd
         })
-        .then(function(res) { return res.text(); })
-        .then(function(url) {
-            if (url && url.indexOf('https://') === 0) {
-                console.log('✅ Catbox video upload success:', url.trim());
-                resolve(url.trim());
+        .then(function(res) { return res.json(); })
+        .then(function(json) {
+            if (json && json.data && json.data.url) {
+                var directUrl = json.data.url.replace('tmpfiles.org/', 'tmpfiles.org/dl/');
+                console.log('✅ Tmpfiles upload success:', directUrl);
+                resolve(directUrl);
             } else {
-                throw new Error('Catbox error');
+                throw new Error('Tmpfiles failed');
             }
         })
-        .catch(function(err) {
-            console.warn('Catbox upload failed, trying tmpfiles fallback:', err);
+        .catch(function(err1) {
+            console.warn('Tmpfiles upload failed, trying file.io fallback:', err1);
+            // 2. Try file.io (CORS enabled)
             var fd2 = new FormData();
             fd2.append('file', file);
-            fetch('https://tmpfiles.org/api/v1/upload', {
+            fetch('https://file.io', {
                 method: 'POST',
                 body: fd2
             })
             .then(function(res) { return res.json(); })
-            .then(function(json) {
-                if (json && json.data && json.data.url) {
-                    var directUrl = json.data.url.replace('tmpfiles.org/', 'tmpfiles.org/dl/');
-                    console.log('✅ Tmpfiles video upload success:', directUrl);
-                    resolve(directUrl);
+            .then(function(json2) {
+                if (json2 && json2.link) {
+                    console.log('✅ File.io upload success:', json2.link);
+                    resolve(json2.link);
                 } else {
-                    throw new Error('Tmpfiles error');
+                    throw new Error('File.io failed');
                 }
             })
             .catch(function(err2) {
-                console.error('Cloud video hostings failed, using sample:', err2);
+                console.error('All cloud video hostings failed, using sample stream:', err2);
                 resolve(getRandomSampleVideo());
             });
         });
