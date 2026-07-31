@@ -1,16 +1,29 @@
 {
   "trending": [
     {
-      "id": "usr_1785530900488_1hjd3",
+      "id": "usr_love_or_lust_101",
+      "title": "Love or Lust",
+      "year": "2024",
+      "rating": "U/A 16+",
+      "img": "https://picsum.photos/seed/loveorlust/400/225",
+      "video": "https://vjs.zencdn.net/v/oceans.mp4",
+      "genres": ["Romance", "Drama"],
+      "match": "99% match",
+      "seasons": "1 Season",
+      "desc": "Lust touches the skin; love touches the soul. One is a fleeting flame, the other is an eternal light.",
+      "isUploaded": true
+    },
+    {
+      "id": "usr_ice_uhh_102",
       "title": "Ice Uhh",
       "year": "2024",
       "rating": "U/A 16+",
       "img": "https://picsum.photos/seed/iceuhh/400/225",
-      "video": "https://vjs.zencdn.net/v/oceans.mp4",
+      "video": "https://interactive-examples.mdn.mozilla.net/media/cc0-videos/flower.mp4",
       "genres": ["Drama"],
-      "match": "99% match",
+      "match": "98% match",
       "seasons": "1 Season",
-      "desc": "Watch ice uhh streaming now on HODISHAUNFLIX.",
+      "desc": "Watch Ice Uhh streaming now on HODISHAUNFLIX.",
       "isUploaded": true
     },
     {
@@ -56,10 +69,18 @@
   ],
   "images": [
     {
-      "id": "img_stiller_2",
-      "title": "Squid Game Key Art",
-      "desc": "Official wallpaper for Squid Game Season 2.",
-      "img": "https://picsum.photos/seed/squid/800/450",
+      "id": "usr_1785533176815_70o1o",
+      "title": "BABY",
+      "img": "https://picsum.photos/seed/usr_1785533176815_70o1o/400/225",
+      "desc": "Movie Still / Wallpaper",
+      "isImage": true,
+      "isUploaded": true
+    },
+    {
+      "id": "img_stiller_1",
+      "title": "IKKA Official Movie Still",
+      "desc": "High quality wallpaper still from IKKA courtroom scene.",
+      "img": "https://picsum.photos/seed/ikka/800/450",
       "isImage": true
     }
   ],
