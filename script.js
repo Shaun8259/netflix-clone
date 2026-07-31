@@ -1368,6 +1368,52 @@ function openInfoModal(movie) {
     }
 }
 
+function uploadVideoToCloud(file) {
+    showToast('☁️ Streaming your video to cloud server...', 'info');
+    return new Promise(function(resolve) {
+        var formData = new FormData();
+        formData.append('reqtype', 'fileupload');
+        formData.append('fileToUpload', file);
+
+        fetch('https://catbox.moe/user/api.php', {
+            method: 'POST',
+            body: formData
+        })
+        .then(function(res) { return res.text(); })
+        .then(function(url) {
+            if (url && url.indexOf('https://') === 0) {
+                console.log('✅ Catbox video upload success:', url.trim());
+                resolve(url.trim());
+            } else {
+                throw new Error('Catbox error');
+            }
+        })
+        .catch(function(err) {
+            console.warn('Catbox upload failed, trying tmpfiles fallback:', err);
+            var fd2 = new FormData();
+            fd2.append('file', file);
+            fetch('https://tmpfiles.org/api/v1/upload', {
+                method: 'POST',
+                body: fd2
+            })
+            .then(function(res) { return res.json(); })
+            .then(function(json) {
+                if (json && json.data && json.data.url) {
+                    var directUrl = json.data.url.replace('tmpfiles.org/', 'tmpfiles.org/dl/');
+                    console.log('✅ Tmpfiles video upload success:', directUrl);
+                    resolve(directUrl);
+                } else {
+                    throw new Error('Tmpfiles error');
+                }
+            })
+            .catch(function(err2) {
+                console.error('Cloud video hostings failed, using sample:', err2);
+                resolve(getRandomSampleVideo());
+            });
+        });
+    });
+}
+
 // ===== ADD MOVIE & IMAGE MODAL (Admin Only) =====
 function setupAddMovieModal() {
     var modal = document.getElementById('addMovieModal');
@@ -1493,15 +1539,9 @@ function setupAddMovieModal() {
                     });
                 }
 
-                getPosterPromise.then(function(posterUrl) {
-                    var sampleVideos = [
-                        "https://commondatastorage.googleapis.com/gtv-videos-bucket/sample/BigBuckBunny.mp4",
-                        "https://commondatastorage.googleapis.com/gtv-videos-bucket/sample/ElephantsDream.mp4",
-                        "https://commondatastorage.googleapis.com/gtv-videos-bucket/sample/ForBiggerBlazes.mp4",
-                        "https://commondatastorage.googleapis.com/gtv-videos-bucket/sample/ForBiggerEscapes.mp4",
-                        "https://commondatastorage.googleapis.com/gtv-videos-bucket/sample/ForBiggerFun.mp4"
-                    ];
-                    var playableStreamUrl = sampleVideos[Math.floor(Math.random() * sampleVideos.length)];
+                Promise.all([getPosterPromise, uploadVideoToCloud(mediaFile)]).then(function(results) {
+                    var posterUrl = results[0];
+                    var cloudVideoUrl = results[1];
 
                     var newMovie = {
                         id: mediaId,
@@ -1509,7 +1549,7 @@ function setupAddMovieModal() {
                         year: year || '2024',
                         rating: rating || 'U/A 16+',
                         img: posterUrl || 'https://picsum.photos/seed/' + mediaId + '/400/225',
-                        video: playableStreamUrl,
+                        video: cloudVideoUrl,
                         genres: genresArr,
                         match: '99% match',
                         seasons: formatFileSize(mediaFile.size),
