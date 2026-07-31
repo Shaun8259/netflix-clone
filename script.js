@@ -403,9 +403,17 @@ function syncCloudCatalog() {
 }
 
 function startRealtimeSync() {
+    // Poll every 15 seconds to maintain zero rate limits
     setInterval(function() {
         fetchCloudCatalog();
-    }, 4000);
+    }, 15000);
+
+    // Instantly sync when user focuses or returns to the tab
+    document.addEventListener('visibilitychange', function() {
+        if (!document.hidden) {
+            fetchCloudCatalog();
+        }
+    });
 }
 
 // ===== NOTIFICATIONS =====
