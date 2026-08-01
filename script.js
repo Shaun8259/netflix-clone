@@ -251,14 +251,8 @@ function dbClearAll() {
 function mergeCloudCatalog(data) {
     if (!data || typeof data !== 'object') return;
 
+    // Do NOT merge deletedIds from cloud - they cause stale filtering
     if (!movies.deletedIds) movies.deletedIds = [];
-    if (Array.isArray(data.deletedIds)) {
-        data.deletedIds.forEach(function(did) {
-            if (!movies.deletedIds.includes(did)) {
-                movies.deletedIds.push(did);
-            }
-        });
-    }
 
     var keys = ['trending', 'popular', 'action', 'comedy', 'picks', 'images'];
     var hasChanges = false;
@@ -357,24 +351,49 @@ function fetchFromCloud() {
 function syncCloudCatalog() {
     saveLocalCatalog();
 
+    // Create a LIGHTWEIGHT copy for cloud sync
+    // JSONBlob has a hard 10KB limit for anonymous users
     var cloudPayload = JSON.parse(JSON.stringify(movies));
     var keys = ['trending', 'popular', 'action', 'comedy', 'picks', 'images'];
     keys.forEach(function(k) {
         if (!Array.isArray(cloudPayload[k])) return;
         cloudPayload[k].forEach(function(item) {
-            // Remove heavy binary fields not needed for cloud sync
+            // CRITICAL: Replace base64 data URLs with lightweight seed URLs
+            // This keeps the payload under 10KB for JSONBlob
+            if (item.img && typeof item.img === 'string' && item.img.indexOf('data:') === 0) {
+                item.img = 'https://picsum.photos/seed/' + encodeURIComponent(item.id) + '/400/225';
+            }
+            // Remove heavy fields
             delete item.videoBase64;
         });
     });
 
-    var payload = JSON.stringify(cloudPayload);
-    console.log('Cloud sync payload size:', (payload.length / 1024).toFixed(1) + 'KB');
+    // Clear deletedIds to prevent stale filtering on other devices
+    cloudPayload.deletedIds = [];
 
-    // Sync to local server API
+    var payload = JSON.stringify(cloudPayload);
+    var payloadKB = (payload.length / 1024).toFixed(1);
+    console.log('Cloud sync payload size:', payloadKB + 'KB');
+
+    // Safety check: if still over 9KB, trim descriptions
+    if (payload.length > 9000) {
+        keys.forEach(function(k) {
+            if (!Array.isArray(cloudPayload[k])) return;
+            cloudPayload[k].forEach(function(item) {
+                if (item.desc && item.desc.length > 60) {
+                    item.desc = item.desc.substring(0, 60) + '...';
+                }
+            });
+        });
+        payload = JSON.stringify(cloudPayload);
+        console.log('Cloud sync payload trimmed to:', (payload.length / 1024).toFixed(1) + 'KB');
+    }
+
+    // Sync to local server API (can handle full data)
     fetch(LOCAL_API_URL, {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify(movies) // local API can handle full data
+        body: JSON.stringify(movies)
     }).catch(function(){});
 
     // Sync to cloud API (lightweight payload)
@@ -385,10 +404,13 @@ function syncCloudCatalog() {
     })
     .then(function(res) {
         if (!res.ok) {
-            console.error('Cloud sync FAILED! HTTP status:', res.status);
-            showToast('⚠️ Cloud sync failed (status ' + res.status + ')', 'error');
+            return res.text().then(function(body) {
+                console.error('Cloud sync FAILED! Status:', res.status, 'Body:', body);
+                showToast('⚠️ Cloud sync failed (status ' + res.status + '): ' + body, 'error');
+            });
         } else {
-            console.log('✅ Cloud catalog synced! All users will see updates.');
+            console.log('✅ Cloud catalog synced! All users will see updates. Size:', payloadKB + 'KB');
+            showToast('✅ Synced to all devices!', 'success');
         }
     })
     .catch(function(err) {
@@ -1569,8 +1591,6 @@ function setupAddMovieModal() {
                             console.log('✅ Background video cloud upload completed:', cloudVideoUrl);
                         }
                     }).catch(function(){});
-                });
-                    showToast('🎉 Movie "' + label + '" published to all users!', 'success');
                 });
             }
         });

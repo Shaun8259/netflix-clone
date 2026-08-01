@@ -1,19 +1,6 @@
 {
   "trending": [
     {
-      "id": "usr_love_or_lust_101",
-      "title": "Love or Lust",
-      "year": "2024",
-      "rating": "U/A 16+",
-      "img": "https://picsum.photos/seed/loveorlust/400/225",
-      "video": "https://vjs.zencdn.net/v/oceans.mp4",
-      "genres": ["Romance", "Drama"],
-      "match": "99% match",
-      "seasons": "1 Season",
-      "desc": "Lust touches the skin; love touches the soul. One is a fleeting flame, the other is an eternal light.",
-      "isUploaded": true
-    },
-    {
       "id": "usr_ice_uhh_102",
       "title": "Ice Uhh",
       "year": "2024",
@@ -37,6 +24,18 @@
       "match": "98% match",
       "seasons": "1 Season",
       "desc": "To save a loved one, lawyer Arjun Mehra must do the unthinkable."
+    },
+    {
+      "id": "m_squid",
+      "title": "Squid Game",
+      "year": "2024",
+      "rating": "U/A 18+",
+      "img": "https://picsum.photos/seed/squid/400/225",
+      "video": "https://commondatastorage.googleapis.com/gtv-videos-bucket/sample/ElephantsDream.mp4",
+      "genres": ["Thriller", "Drama"],
+      "match": "99% match",
+      "seasons": "2 Seasons",
+      "desc": "Hundreds of cash-strapped players compete in deadly games."
     }
   ],
   "popular": [
@@ -51,6 +50,18 @@
       "match": "95% match",
       "seasons": "3 Seasons",
       "desc": "Geralt of Rivia, a mutated monster-hunter for hire."
+    },
+    {
+      "id": "m_queen",
+      "title": "The Queen's Gambit",
+      "year": "2023",
+      "rating": "U/A 16+",
+      "img": "https://picsum.photos/seed/queens/400/225",
+      "video": "https://commondatastorage.googleapis.com/gtv-videos-bucket/sample/ForBiggerEscapes.mp4",
+      "genres": ["Drama"],
+      "match": "97% match",
+      "seasons": "Limited Series",
+      "desc": "A young girl reveals an astonishing talent for chess."
     }
   ],
   "action": [
@@ -64,23 +75,15 @@
       "genres": ["Action", "Crime"],
       "match": "94% match",
       "seasons": "1 Season",
-      "desc": "When Eddie inherits the estate, he discovers an weed empire."
+      "desc": "Eddie inherits an estate and discovers an empire."
     }
   ],
   "images": [
     {
-      "id": "usr_1785533176815_70o1o",
-      "title": "BABY",
-      "img": "https://picsum.photos/seed/usr_1785533176815_70o1o/400/225",
-      "desc": "Movie Still / Wallpaper",
-      "isImage": true,
-      "isUploaded": true
-    },
-    {
-      "id": "img_stiller_1",
-      "title": "IKKA Official Movie Still",
-      "desc": "High quality wallpaper still from IKKA courtroom scene.",
-      "img": "https://picsum.photos/seed/ikka/800/450",
+      "id": "img_stiller_2",
+      "title": "Squid Game Key Art",
+      "desc": "Official wallpaper for Squid Game Season 2.",
+      "img": "https://picsum.photos/seed/squid/800/450",
       "isImage": true
     }
   ],
@@ -95,7 +98,7 @@
       "genres": ["Romance"],
       "match": "92% match",
       "seasons": "3 Seasons",
-      "desc": "Wealth, lust, and betrayal set in Regency era England."
+      "desc": "Wealth, lust, and betrayal in Regency era England."
     }
   ],
   "picks": [
@@ -109,7 +112,7 @@
       "genres": ["Crime", "Thriller"],
       "match": "99% match",
       "seasons": "5 Seasons",
-      "desc": "An unusual group of robbers attempt the most perfect robbery."
+      "desc": "Robbers attempt the most perfect robbery in history."
     }
   ],
   "deletedIds": []
