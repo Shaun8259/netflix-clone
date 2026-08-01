@@ -147,29 +147,32 @@ function mergeCloudCatalog(data) {
 
     var keys = ['trending', 'popular', 'action', 'comedy', 'picks', 'images'];
     var hasChanges = false;
+function mergeCloudCatalog(data) {
+    if (!data) return;
+    if (!movies.deletedIds) movies.deletedIds = [];
+
+    var keys = ['trending', 'popular', 'action', 'comedy', 'picks', 'images'];
+    var hasChanges = false;
     var delIds = movies.deletedIds || [];
 
     keys.forEach(function(k) {
         var map = {};
 
-        // 1. Default items
-        if (Array.isArray(defaultMovies[k])) {
-            defaultMovies[k].forEach(function(item) {
-                if (!delIds.includes(item.id)) map[item.id] = item;
-            });
-        }
-
-        // 2. Local items
+        // 1. Keep all existing local items first (especially Admin uploaded items)
         if (Array.isArray(movies[k])) {
             movies[k].forEach(function(item) {
                 if (!delIds.includes(item.id)) map[item.id] = item;
             });
         }
 
-        // 3. Shared API items (highest priority)
+        // 2. Merge cloud items (do not overwrite local uploaded items with older cloud data)
         if (Array.isArray(data[k])) {
             data[k].forEach(function(item) {
-                if (!delIds.includes(item.id)) map[item.id] = item;
+                if (!delIds.includes(item.id)) {
+                    if (!map[item.id] || (!map[item.id].isUploaded && item.isUploaded)) {
+                        map[item.id] = item;
+                    }
+                }
             });
         }
 
@@ -177,7 +180,7 @@ function mergeCloudCatalog(data) {
             return !delIds.includes(item.id);
         });
 
-        // Uploaded items first
+        // Ensure uploaded items remain at top
         mergedList.sort(function(a, b) {
             if (a.isUploaded && !b.isUploaded) return -1;
             if (!a.isUploaded && b.isUploaded) return 1;
@@ -197,8 +200,6 @@ function mergeCloudCatalog(data) {
 }
 
 function fetchCloudCatalog() {
-    // On Vercel (no local server), go directly to cloud API
-    // On localhost, try local API first (faster), then cloud as backup
     var isLocalhost = window.location.hostname === 'localhost' || window.location.hostname === '127.0.0.1';
 
     if (isLocalhost) {
@@ -251,7 +252,7 @@ function syncCloudCatalog() {
         });
     });
 
-    cloudPayload.deletedIds = [];
+    cloudPayload.deletedIds = movies.deletedIds || [];
 
     var payload = JSON.stringify(cloudPayload);
     var payloadKB = (payload.length / 1024).toFixed(1);
@@ -263,28 +264,32 @@ function syncCloudCatalog() {
         body: JSON.stringify(movies)
     }).catch(function(){});
 
-    // Sync to cloud API silently with auto-recreation
+    // Sync to cloud API with instant retry & auto-recreation
     return fetch(CLOUD_API_URL, {
         method: 'PUT',
         headers: { 'Content-Type': 'application/json' },
         body: payload
     })
     .then(function(res) {
-        if (res.status === 404) {
-            // Blob expired: silently create new Blob
+        if (!res.ok) {
             return fetch('https://jsonblob.com/api/jsonBlob', {
                 method: 'POST',
                 headers: { 'Content-Type': 'application/json' },
                 body: payload
-            }).then(function(createRes) {
-                console.log('✅ Recreated fresh cloud blob, status:', createRes.status);
+            })
+            .then(function(cRes) {
+                var loc = cRes.headers.get('Location');
+                if (loc) {
+                    CLOUD_API_URL = loc.replace('http:', 'https:');
+                    console.log('✅ Created fresh Cloud API endpoint:', CLOUD_API_URL);
+                }
             });
-        } else if (res.ok) {
-            console.log('✅ Cloud catalog synced silently. Size:', payloadKB + 'KB');
+        } else {
+            console.log('✅ Cloud catalog synced successfully! Size:', payloadKB + 'KB');
         }
     })
     .catch(function(err) {
-        console.warn('Cloud sync background retry:', err);
+        console.warn('Cloud sync background error:', err);
     });
 }
 
