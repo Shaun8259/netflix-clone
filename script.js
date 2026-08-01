@@ -1216,6 +1216,49 @@ function openInfoModal(movie) {
         banner.style.backgroundImage = 'url("' + movie.img + '")';
     }
 
+    var changePosterBtn = document.getElementById('infoModalChangePosterBtn');
+    var changePosterInput = document.getElementById('changePosterFileInput');
+
+    if (changePosterBtn && changePosterInput) {
+        changePosterBtn.onclick = function(e) {
+            e.stopPropagation();
+            changePosterInput.click();
+        };
+
+        changePosterInput.onchange = function() {
+            if (changePosterInput.files.length) {
+                var file = changePosterInput.files[0];
+                showToast('Updating thumbnail for "' + movie.title + '"...', 'info');
+                var reader = new FileReader();
+                reader.onload = function(evt) {
+                    compressImage(evt.target.result, 320, 180, 0.5).then(function(compressedImg) {
+                        movie.img = compressedImg;
+                        if (banner) banner.style.backgroundImage = 'url("' + compressedImg + '")';
+
+                        var catKeys = Object.keys(movies);
+                        catKeys.forEach(function(ck) {
+                            if (Array.isArray(movies[ck])) {
+                                movies[ck].forEach(function(item) {
+                                    if (item.id === movie.id) {
+                                        item.img = compressedImg;
+                                    }
+                                });
+                            }
+                        });
+
+                        updateHeroBanner(movie);
+                        saveLocalCatalog();
+                        renderRows();
+                        syncCloudCatalog();
+
+                        showToast('🎉 Custom poster updated for "' + movie.title + '" across all devices!', 'success');
+                    });
+                };
+                reader.readAsDataURL(file);
+            }
+        };
+    }
+
     modal.classList.add('open');
 
     function close() { modal.classList.remove('open'); }
