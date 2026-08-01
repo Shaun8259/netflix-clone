@@ -1284,28 +1284,53 @@ function uploadImageToCloud(fileOrDataUrl) {
 }
 
 function uploadVideoToCloud(file) {
-    showToast('🚀 Uploading to Unlimited Web3 Cloud Storage...', 'info');
+    if (!file) return Promise.resolve('');
+    var fileSizeMB = (file.size / (1024 * 1024)).toFixed(1);
+    showToast('🚀 Uploading ' + fileSizeMB + 'MB video to High-Capacity Cloud...', 'info');
+
     return new Promise(function(resolve) {
         var fd = new FormData();
-        fd.append('file', file);
+        fd.append('reqtype', 'fileupload');
+        fd.append('time', '72h');
+        fd.append('fileToUpload', file);
 
-        fetch('https://tmpfiles.org/api/v1/upload', {
+        // 1. Try Litterbox Catbox High-Capacity API (Up to 1 GB per file)
+        fetch('https://litterbox.catbox.moe/resources/internals/api.php', {
             method: 'POST',
             body: fd
         })
-        .then(function(res) { return res.json(); })
-        .then(function(json2) {
-            if (json2 && json2.data && json2.data.url) {
-                var directUrl = json2.data.url.replace('tmpfiles.org/', 'tmpfiles.org/dl/');
-                console.log('✅ Cloud video upload success:', directUrl);
-                resolve(directUrl);
+        .then(function(res) { return res.text(); })
+        .then(function(text) {
+            if (text && text.trim().indexOf('http') === 0) {
+                var streamUrl = text.trim();
+                console.log('✅ Catbox Litterbox GB upload success:', streamUrl);
+                resolve(streamUrl);
             } else {
-                throw new Error('Cloud upload error');
+                throw new Error('Litterbox response invalid');
             }
         })
-        .catch(function(err2) {
-            console.error('All cloud video hostings failed, using sample stream:', err2);
-            resolve(getRandomSampleVideo());
+        .catch(function(err1) {
+            console.warn('Litterbox 1GB upload failed, trying Tmpfiles backup:', err1);
+            var fd2 = new FormData();
+            fd2.append('file', file);
+            fetch('https://tmpfiles.org/api/v1/upload', {
+                method: 'POST',
+                body: fd2
+            })
+            .then(function(res) { return res.json(); })
+            .then(function(json2) {
+                if (json2 && json2.data && json2.data.url) {
+                    var directUrl = json2.data.url.replace('tmpfiles.org/', 'tmpfiles.org/dl/');
+                    console.log('✅ Tmpfiles upload success:', directUrl);
+                    resolve(directUrl);
+                } else {
+                    throw new Error('Tmpfiles failed');
+                }
+            })
+            .catch(function(err2) {
+                console.error('All cloud video hostings failed:', err2);
+                resolve('');
+            });
         });
     });
 }
@@ -1378,20 +1403,25 @@ function setupAddMovieModal() {
             var genresStr = document.getElementById('movieGenreInput').value.trim();
             var desc = document.getElementById('movieDescInput').value.trim();
             var posterInput = document.getElementById('moviePosterFile');
+            var directUrlInput = document.getElementById('movieUrlInput');
+            var directVideoUrl = directUrlInput ? directUrlInput.value.trim() : '';
 
             if (!label) { showToast('Please enter a title/label', 'error'); return; }
-            if (!mediaInput.files.length) { showToast('Please select a file', 'error'); return; }
+            if (!mediaInput.files.length && !directVideoUrl) {
+                showToast('Please select a video file or enter a Direct Video Stream URL', 'error');
+                return;
+            }
 
-            var mediaFile = mediaInput.files[0];
+            var mediaFile = mediaInput.files.length ? mediaInput.files[0] : null;
             var mediaId = 'usr_' + Date.now() + '_' + Math.random().toString(36).substr(2, 5);
-            var isImageFile = mediaFile.type.startsWith('image/') || category === 'images';
+            var isImageFile = mediaFile ? (mediaFile.type.startsWith('image/') || category === 'images') : (category === 'images');
 
-            showToast('Optimizing & Publishing "' + label + '" to all users...', 'success');
+            showToast('Publishing "' + label + '" to all users...', 'success');
 
-            if (isImageFile) {
+            if (isImageFile && mediaFile) {
                 var reader = new FileReader();
                 reader.onload = function(evt) {
-                    compressImage(evt.target.result, 320, 180, 0.6).then(function(compressedImg) {
+                    compressImage(evt.target.result, 320, 180, 0.5).then(function(compressedImg) {
                         var newImgObj = {
                             id: mediaId,
                             title: label,
@@ -1429,37 +1459,37 @@ function setupAddMovieModal() {
                         };
                         r.readAsDataURL(posterInput.files[0]);
                     });
-                } else {
+                } else if (mediaFile) {
                     getPosterPromise = generateThumbnail(mediaFile).then(function(rawThumb) {
                         return compressImage(rawThumb, 320, 180, 0.5);
                     });
+                } else {
+                    getPosterPromise = Promise.resolve('https://picsum.photos/seed/' + mediaId + '/400/225');
                 }
 
                 getPosterPromise.then(function(posterUrl) {
-                    showToast('☁️ Uploading "' + label + '" video to cloud storage...', 'info');
+                    var getVideoPromise = directVideoUrl
+                        ? Promise.resolve(directVideoUrl)
+                        : (mediaFile ? uploadVideoToCloud(mediaFile) : Promise.resolve(''));
 
-                    uploadVideoToCloud(mediaFile).then(function(cloudVideoUrl) {
+                    getVideoPromise.then(function(cloudVideoUrl) {
                         var newMovie = {
                             id: mediaId,
                             title: label,
                             year: year || '2024',
                             rating: rating || 'U/A 16+',
                             img: posterUrl || 'https://picsum.photos/seed/' + mediaId + '/400/225',
-                            video: cloudVideoUrl || '',
+                            video: cloudVideoUrl || directVideoUrl || '',
                             genres: genresArr,
                             match: '99% match',
-                            seasons: formatFileSize(mediaFile.size),
+                            seasons: mediaFile ? formatFileSize(mediaFile.size) : '4K Ultra HD',
                             desc: desc,
                             isUploaded: true
                         };
 
-                        var dbRecord = {
-                            id: mediaId,
-                            movieData: newMovie,
-                            blob: mediaFile
-                        };
-
-                        dbSaveMovie(dbRecord).catch(function(){});
+                        if (mediaFile) {
+                            dbSaveMovie({ id: mediaId, movieData: newMovie, blob: mediaFile }).catch(function(){});
+                        }
 
                         if (!movies[category]) movies[category] = [];
                         movies[category].unshift(newMovie);

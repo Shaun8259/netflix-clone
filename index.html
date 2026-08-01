@@ -297,14 +297,19 @@
                     </div>
 
                     <div class="form-group full-width">
-                        <label>Media File (Video MP4 or Image Wallpaper) <span class="required">*</span></label>
+                        <label>Media File (Video MP4 or Image Wallpaper)</label>
                         <div class="file-drop-zone" id="fileDropZone">
                             <div class="drop-icon">
                                 <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/><polyline points="17 8 12 3 7 8"/><line x1="12" y1="3" x2="12" y2="15"/></svg>
                             </div>
                             <span id="videoFileStatus">Click or drag & drop video or image here</span>
-                            <input type="file" id="movieVideoFile" accept="video/*,image/*" style="display:none;" required>
+                            <input type="file" id="movieVideoFile" accept="video/*,image/*" style="display:none;">
                         </div>
+                    </div>
+
+                    <div class="form-group full-width">
+                        <label for="movieUrlInput">OR Direct Video Stream URL / Cloud Link (For GB-sized 1GB+ files)</label>
+                        <input type="url" id="movieUrlInput" placeholder="https://... (Google Drive, Dropbox, AWS S3, Cloudflare, or direct MP4 link)">
                     </div>
 
                     <div class="form-group full-width">
