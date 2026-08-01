@@ -1283,46 +1283,64 @@ function uploadImageToCloud(fileOrDataUrl) {
     });
 }
 
-function uploadVideoToCloud(file) {
+function uploadVideoToCloud(file, progressCallback) {
     if (!file) return Promise.resolve('');
     var fileSizeMB = (file.size / (1024 * 1024)).toFixed(1);
-    showToast('🚀 Uploading ' + fileSizeMB + 'MB video to Direct Cloud Stream...', 'info');
+    console.log('🚀 Starting XHR video upload:', fileSizeMB + 'MB');
 
-    var binId = 'hodishaunflix-' + Date.now();
-    var filename = 'video_' + Date.now() + '.mp4';
-    var uploadUrl = 'https://filebin.net/' + binId + '/' + filename;
+    return new Promise(function(resolve) {
+        var xhr = new XMLHttpRequest();
+        var startTime = Date.now();
 
-    return fetch(uploadUrl, {
-        method: 'POST',
-        headers: { 'bin': binId },
-        body: file
-    })
-    .then(function(res) { return res.json(); })
-    .then(function(json) {
-        var directUrl = 'https://filebin.net/' + binId + '/' + filename;
-        console.log('✅ Direct S3 Cloud upload success:', directUrl);
-        return directUrl;
-    })
-    .catch(function(err1) {
-        console.warn('Filebin upload failed, trying tmpfiles fallback:', err1);
-        var fd = new FormData();
-        fd.append('file', file);
-        return fetch('https://tmpfiles.org/api/v1/upload', {
-            method: 'POST',
-            body: fd
-        })
-        .then(function(res) { return res.json(); })
-        .then(function(json2) {
-            if (json2 && json2.data && json2.data.url) {
-                var streamUrl = json2.data.url.replace('tmpfiles.org/', 'tmpfiles.org/dl/');
-                console.log('✅ Tmpfiles fallback upload success:', streamUrl);
-                return streamUrl;
+        xhr.upload.onprogress = function(e) {
+            if (e.lengthComputable) {
+                var percent = Math.round((e.loaded / e.total) * 100);
+                var elapsedTimeSec = (Date.now() - startTime) / 1000;
+                var speedBps = elapsedTimeSec > 0 ? (e.loaded / elapsedTimeSec) : 0;
+                var speedMBps = (speedBps / (1024 * 1024)).toFixed(1);
+                var loadedMB = (e.loaded / (1024 * 1024)).toFixed(1);
+                var totalMB = (e.total / (1024 * 1024)).toFixed(1);
+
+                if (typeof progressCallback === 'function') {
+                    progressCallback({
+                        percent: percent,
+                        loadedMB: loadedMB,
+                        totalMB: totalMB,
+                        speedMBps: speedMBps
+                    });
+                }
             }
-            return '';
-        })
-        .catch(function() {
-            return '';
-        });
+        };
+
+        xhr.onload = function() {
+            if (xhr.status >= 200 && xhr.status < 300) {
+                try {
+                    var json = JSON.parse(xhr.responseText);
+                    if (json && json.data && json.data.url) {
+                        var streamUrl = json.data.url.replace('tmpfiles.org/', 'tmpfiles.org/dl/');
+                        resolve(streamUrl);
+                    } else if (json && json.file && json.file.url) {
+                        resolve(json.file.url);
+                    } else {
+                        resolve(xhr.responseText.trim());
+                    }
+                } catch(e) {
+                    resolve(xhr.responseText.trim());
+                }
+            } else {
+                resolve('');
+            }
+        };
+
+        xhr.onerror = function() { resolve(''); };
+
+        var binId = 'hodishaunflix-' + Date.now();
+        var filename = 'video_' + Date.now() + '.mp4';
+        var uploadUrl = 'https://filebin.net/' + binId + '/' + filename;
+
+        xhr.open('POST', uploadUrl, true);
+        xhr.setRequestHeader('bin', binId);
+        xhr.send(file);
     });
 }
 
@@ -1339,6 +1357,12 @@ function setupAddMovieModal() {
     var mediaInput = document.getElementById('movieVideoFile');
     var fileStatus = document.getElementById('videoFileStatus');
 
+    var progressBox = document.getElementById('uploadProgressBox');
+    var barFill = document.getElementById('progressBarFill');
+    var percentText = document.getElementById('progressPercentText');
+    var bytesText = document.getElementById('progressBytesText');
+    var speedText = document.getElementById('progressSpeedText');
+
     if (!modal) return;
 
     function openModal() {
@@ -1346,10 +1370,18 @@ function setupAddMovieModal() {
             showToast('🔒 Admin access required to add content', 'error');
             return;
         }
+        if (progressBox) progressBox.style.display = 'none';
+        if (barFill) barFill.style.width = '0%';
         modal.classList.add('open');
     }
 
-    function closeModal() { modal.classList.remove('open'); form.reset(); fileStatus.textContent = 'Click or drag & drop video or image here'; }
+    function closeModal() {
+        modal.classList.remove('open');
+        form.reset();
+        fileStatus.textContent = 'Click or drag & drop video or image here';
+        if (progressBox) progressBox.style.display = 'none';
+        if (barFill) barFill.style.width = '0%';
+    }
 
     if (openBtn) openBtn.addEventListener('click', openModal);
     if (openImgBtn) openImgBtn.addEventListener('click', openModal);
@@ -1407,8 +1439,6 @@ function setupAddMovieModal() {
             var mediaId = 'usr_' + Date.now() + '_' + Math.random().toString(36).substr(2, 5);
             var isImageFile = mediaFile ? (mediaFile.type.startsWith('image/') || category === 'images') : (category === 'images');
 
-            showToast('Publishing "' + label + '" to all users...', 'success');
-
             if (isImageFile && mediaFile) {
                 var reader = new FileReader();
                 reader.onload = function(evt) {
@@ -1441,6 +1471,12 @@ function setupAddMovieModal() {
             } else {
                 var genresArr = genresStr ? genresStr.split(',').map(function(s) { return s.trim(); }) : ['Action', 'Drama'];
 
+                if (progressBox && mediaFile && !directVideoUrl) {
+                    progressBox.style.display = 'flex';
+                    if (barFill) barFill.style.width = '0%';
+                    if (percentText) percentText.textContent = '0%';
+                }
+
                 var getPosterPromise;
                 if (posterInput && posterInput.files.length) {
                     getPosterPromise = new Promise(function(res) {
@@ -1455,21 +1491,27 @@ function setupAddMovieModal() {
                         return compressImage(rawThumb, 320, 180, 0.5);
                     });
                 } else {
-                    getPosterPromise = Promise.resolve('https://picsum.photos/seed/' + mediaId + '/400/225');
+                    getPosterPromise = Promise.resolve('');
                 }
 
                 getPosterPromise.then(function(posterUrl) {
                     var getVideoPromise = directVideoUrl
                         ? Promise.resolve(directVideoUrl)
-                        : (mediaFile ? uploadVideoToCloud(mediaFile) : Promise.resolve(''));
+                        : (mediaFile ? uploadVideoToCloud(mediaFile, function(p) {
+                            if (barFill) barFill.style.width = p.percent + '%';
+                            if (percentText) percentText.textContent = p.percent + '%';
+                            if (bytesText) bytesText.textContent = p.loadedMB + ' MB / ' + p.totalMB + ' MB';
+                            if (speedText) speedText.textContent = p.speedMBps + ' MB/s';
+                        }) : Promise.resolve(''));
 
                     getVideoPromise.then(function(cloudVideoUrl) {
+                        var finalPoster = posterUrl || 'https://picsum.photos/seed/' + mediaId + '/400/225';
                         var newMovie = {
                             id: mediaId,
                             title: label,
                             year: year || '2024',
                             rating: rating || 'U/A 16+',
-                            img: posterUrl || 'https://picsum.photos/seed/' + mediaId + '/400/225',
+                            img: finalPoster,
                             video: cloudVideoUrl || directVideoUrl || '',
                             genres: genresArr,
                             match: '99% match',

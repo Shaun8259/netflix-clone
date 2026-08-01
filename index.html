@@ -318,6 +318,21 @@
                     </div>
                 </div>
 
+                <!-- Animated Upload Progress Bar with Speed & Percentage Counter -->
+                <div class="upload-progress-container" id="uploadProgressBox" style="display:none; margin-top:16px;">
+                    <div class="progress-info-row">
+                        <span class="progress-title" id="progressStatusText">🚀 Uploading video to cloud...</span>
+                        <span class="progress-percent" id="progressPercentText">0%</span>
+                    </div>
+                    <div class="progress-track">
+                        <div class="progress-bar-fill" id="progressBarFill" style="width: 0%;"></div>
+                    </div>
+                    <div class="progress-speed-row">
+                        <span id="progressBytesText">0.0 MB / 0.0 MB</span>
+                        <span id="progressSpeedText">0.0 MB/s</span>
+                    </div>
+                </div>
+
                 <div class="form-actions">
                     <button type="button" class="btn-cancel" id="cancelAddMovieBtn">Cancel</button>
                     <button type="submit" class="btn-submit">

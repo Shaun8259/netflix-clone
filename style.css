@@ -555,7 +555,46 @@ body:not(.is-admin) .admin-only {
 .btn-cancel:hover { color: white; background-color: rgba(255, 255, 255, 0.08); }
 .btn-submit { display: inline-flex; align-items: center; gap: 8px; background-color: var(--accent); color: white; padding: 10px 22px; border-radius: 4px; font-weight: 700; font-size: 0.9rem; }
 .btn-submit:hover { background-color: var(--accent-hover); }
-.btn-submit svg { width: 16px; height: 16px; }
+/* ===== UPLOAD PROGRESS BAR ===== */
+.upload-progress-container {
+  background: rgba(0, 0, 0, 0.4);
+  border: 1px solid rgba(229, 9, 20, 0.3);
+  border-radius: 8px;
+  padding: 16px;
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+}
+.progress-info-row {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  font-size: 0.85rem;
+  font-weight: 700;
+}
+.progress-title { color: #fff; }
+.progress-percent { color: var(--accent); font-size: 0.95rem; }
+.progress-track {
+  width: 100%;
+  height: 8px;
+  background: rgba(255, 255, 255, 0.12);
+  border-radius: 4px;
+  overflow: hidden;
+}
+.progress-bar-fill {
+  height: 100%;
+  background: linear-gradient(90deg, #e50914 0%, #ff4b55 100%);
+  border-radius: 4px;
+  transition: width 0.15s ease-out;
+  box-shadow: 0 0 10px rgba(229, 9, 20, 0.6);
+}
+.progress-speed-row {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  font-size: 0.78rem;
+  color: var(--text-secondary);
+}
 
 /* ===== VIDEO PLAYER MODAL ===== */
 .video-modal {
