@@ -254,19 +254,6 @@ function syncCloudCatalog() {
     var payload = JSON.stringify(cloudPayload);
     var payloadKB = (payload.length / 1024).toFixed(1);
 
-    // If payload exceeds 9KB, compress extra fields to prevent 400 Bad Request
-    if (payload.length > 9000) {
-        keys.forEach(function(k) {
-            if (!Array.isArray(cloudPayload[k])) return;
-            cloudPayload[k].forEach(function(item) {
-                if (item.img && typeof item.img === 'string' && item.img.length > 2500) {
-                    item.img = 'https://picsum.photos/seed/' + encodeURIComponent(item.id) + '/400/225';
-                }
-            });
-        });
-        payload = JSON.stringify(cloudPayload);
-    }
-
     // Sync to local server API silently if available
     fetch(LOCAL_API_URL, {
         method: 'POST',
