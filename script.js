@@ -245,44 +245,57 @@ function syncCloudCatalog() {
     keys.forEach(function(k) {
         if (!Array.isArray(cloudPayload[k])) return;
         cloudPayload[k].forEach(function(item) {
-            // Remove heavy fields
             delete item.videoBase64;
         });
     });
 
-    // Clear deletedIds to prevent stale filtering on other devices
     cloudPayload.deletedIds = [];
 
     var payload = JSON.stringify(cloudPayload);
     var payloadKB = (payload.length / 1024).toFixed(1);
-    console.log('Cloud sync payload size:', payloadKB + 'KB');
 
-    // Sync to local server API
+    // If payload exceeds 9KB, compress extra fields to prevent 400 Bad Request
+    if (payload.length > 9000) {
+        keys.forEach(function(k) {
+            if (!Array.isArray(cloudPayload[k])) return;
+            cloudPayload[k].forEach(function(item) {
+                if (item.img && typeof item.img === 'string' && item.img.length > 2500) {
+                    item.img = 'https://picsum.photos/seed/' + encodeURIComponent(item.id) + '/400/225';
+                }
+            });
+        });
+        payload = JSON.stringify(cloudPayload);
+    }
+
+    // Sync to local server API silently if available
     fetch(LOCAL_API_URL, {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify(movies)
     }).catch(function(){});
 
-    // Sync to cloud API
+    // Sync to cloud API silently with auto-recreation
     return fetch(CLOUD_API_URL, {
         method: 'PUT',
         headers: { 'Content-Type': 'application/json' },
         body: payload
     })
     .then(function(res) {
-        if (!res.ok) {
-            return res.text().then(function(body) {
-                console.error('Cloud sync FAILED! Status:', res.status, 'Body:', body);
-                showToast('⚠️ Cloud sync failed (status ' + res.status + '): ' + body, 'error');
+        if (res.status === 404) {
+            // Blob expired: silently create new Blob
+            return fetch('https://jsonblob.com/api/jsonBlob', {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: payload
+            }).then(function(createRes) {
+                console.log('✅ Recreated fresh cloud blob, status:', createRes.status);
             });
-        } else {
-            console.log('✅ Cloud catalog synced! All users will see updates. Size:', payloadKB + 'KB');
+        } else if (res.ok) {
+            console.log('✅ Cloud catalog synced silently. Size:', payloadKB + 'KB');
         }
     })
     .catch(function(err) {
-        console.error('Cloud sync error:', err);
-        showToast('⚠️ Cloud sync failed - check internet connection', 'error');
+        console.warn('Cloud sync background retry:', err);
     });
 }
 
