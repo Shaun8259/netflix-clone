@@ -1286,51 +1286,42 @@ function uploadImageToCloud(fileOrDataUrl) {
 function uploadVideoToCloud(file) {
     if (!file) return Promise.resolve('');
     var fileSizeMB = (file.size / (1024 * 1024)).toFixed(1);
-    showToast('🚀 Uploading ' + fileSizeMB + 'MB video to High-Capacity Cloud...', 'info');
+    showToast('🚀 Uploading ' + fileSizeMB + 'MB video to Direct Cloud Stream...', 'info');
 
-    return new Promise(function(resolve) {
+    var binId = 'hodishaunflix-' + Date.now();
+    var filename = 'video_' + Date.now() + '.mp4';
+    var uploadUrl = 'https://filebin.net/' + binId + '/' + filename;
+
+    return fetch(uploadUrl, {
+        method: 'POST',
+        headers: { 'bin': binId },
+        body: file
+    })
+    .then(function(res) { return res.json(); })
+    .then(function(json) {
+        var directUrl = 'https://filebin.net/' + binId + '/' + filename;
+        console.log('✅ Direct S3 Cloud upload success:', directUrl);
+        return directUrl;
+    })
+    .catch(function(err1) {
+        console.warn('Filebin upload failed, trying tmpfiles fallback:', err1);
         var fd = new FormData();
-        fd.append('reqtype', 'fileupload');
-        fd.append('time', '72h');
-        fd.append('fileToUpload', file);
-
-        // 1. Try Litterbox Catbox High-Capacity API (Up to 1 GB per file)
-        fetch('https://litterbox.catbox.moe/resources/internals/api.php', {
+        fd.append('file', file);
+        return fetch('https://tmpfiles.org/api/v1/upload', {
             method: 'POST',
             body: fd
         })
-        .then(function(res) { return res.text(); })
-        .then(function(text) {
-            if (text && text.trim().indexOf('http') === 0) {
-                var streamUrl = text.trim();
-                console.log('✅ Catbox Litterbox GB upload success:', streamUrl);
-                resolve(streamUrl);
-            } else {
-                throw new Error('Litterbox response invalid');
+        .then(function(res) { return res.json(); })
+        .then(function(json2) {
+            if (json2 && json2.data && json2.data.url) {
+                var streamUrl = json2.data.url.replace('tmpfiles.org/', 'tmpfiles.org/dl/');
+                console.log('✅ Tmpfiles fallback upload success:', streamUrl);
+                return streamUrl;
             }
+            return '';
         })
-        .catch(function(err1) {
-            console.warn('Litterbox 1GB upload failed, trying Tmpfiles backup:', err1);
-            var fd2 = new FormData();
-            fd2.append('file', file);
-            fetch('https://tmpfiles.org/api/v1/upload', {
-                method: 'POST',
-                body: fd2
-            })
-            .then(function(res) { return res.json(); })
-            .then(function(json2) {
-                if (json2 && json2.data && json2.data.url) {
-                    var directUrl = json2.data.url.replace('tmpfiles.org/', 'tmpfiles.org/dl/');
-                    console.log('✅ Tmpfiles upload success:', directUrl);
-                    resolve(directUrl);
-                } else {
-                    throw new Error('Tmpfiles failed');
-                }
-            })
-            .catch(function(err2) {
-                console.error('All cloud video hostings failed:', err2);
-                resolve('');
-            });
+        .catch(function() {
+            return '';
         });
     });
 }
