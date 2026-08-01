@@ -12,108 +12,12 @@
       "seasons": "1 Season",
       "desc": "Watch Ice Uhh streaming now on HODISHAUNFLIX.",
       "isUploaded": true
-    },
-    {
-      "id": "m_ikka",
-      "title": "IKKA",
-      "year": "2024",
-      "rating": "U/A 16+",
-      "img": "https://picsum.photos/seed/ikka/400/225",
-      "video": "https://interactive-examples.mdn.mozilla.net/media/cc0-videos/flower.mp4",
-      "genres": ["Legal", "Drama"],
-      "match": "98% match",
-      "seasons": "1 Season",
-      "desc": "To save a loved one, lawyer Arjun Mehra must do the unthinkable."
-    },
-    {
-      "id": "m_squid",
-      "title": "Squid Game",
-      "year": "2024",
-      "rating": "U/A 18+",
-      "img": "https://picsum.photos/seed/squid/400/225",
-      "video": "https://commondatastorage.googleapis.com/gtv-videos-bucket/sample/ElephantsDream.mp4",
-      "genres": ["Thriller", "Drama"],
-      "match": "99% match",
-      "seasons": "2 Seasons",
-      "desc": "Hundreds of cash-strapped players compete in deadly games."
     }
   ],
-  "popular": [
-    {
-      "id": "m_witcher",
-      "title": "The Witcher",
-      "year": "2023",
-      "rating": "U/A 18+",
-      "img": "https://picsum.photos/seed/witcher/400/225",
-      "video": "https://vjs.zencdn.net/v/oceans.mp4",
-      "genres": ["Fantasy", "Action"],
-      "match": "95% match",
-      "seasons": "3 Seasons",
-      "desc": "Geralt of Rivia, a mutated monster-hunter for hire."
-    },
-    {
-      "id": "m_queen",
-      "title": "The Queen's Gambit",
-      "year": "2023",
-      "rating": "U/A 16+",
-      "img": "https://picsum.photos/seed/queens/400/225",
-      "video": "https://commondatastorage.googleapis.com/gtv-videos-bucket/sample/ForBiggerEscapes.mp4",
-      "genres": ["Drama"],
-      "match": "97% match",
-      "seasons": "Limited Series",
-      "desc": "A young girl reveals an astonishing talent for chess."
-    }
-  ],
-  "action": [
-    {
-      "id": "m_gentlemen",
-      "title": "The Gentlemen",
-      "year": "2024",
-      "rating": "U/A 18+",
-      "img": "https://picsum.photos/seed/gentlemen/400/225",
-      "video": "https://interactive-examples.mdn.mozilla.net/media/cc0-videos/flower.mp4",
-      "genres": ["Action", "Crime"],
-      "match": "94% match",
-      "seasons": "1 Season",
-      "desc": "Eddie inherits an estate and discovers an empire."
-    }
-  ],
-  "images": [
-    {
-      "id": "img_stiller_2",
-      "title": "Squid Game Key Art",
-      "desc": "Official wallpaper for Squid Game Season 2.",
-      "img": "https://picsum.photos/seed/squid/800/450",
-      "isImage": true
-    }
-  ],
-  "comedy": [
-    {
-      "id": "m_bridgerton",
-      "title": "Bridgerton",
-      "year": "2024",
-      "rating": "U/A 16+",
-      "img": "https://picsum.photos/seed/bridgerton/400/225",
-      "video": "https://vjs.zencdn.net/v/oceans.mp4",
-      "genres": ["Romance"],
-      "match": "92% match",
-      "seasons": "3 Seasons",
-      "desc": "Wealth, lust, and betrayal in Regency era England."
-    }
-  ],
-  "picks": [
-    {
-      "id": "m_moneyheist",
-      "title": "Money Heist",
-      "year": "2023",
-      "rating": "U/A 18+",
-      "img": "https://picsum.photos/seed/moneyheist/400/225",
-      "video": "https://interactive-examples.mdn.mozilla.net/media/cc0-videos/flower.mp4",
-      "genres": ["Crime", "Thriller"],
-      "match": "99% match",
-      "seasons": "5 Seasons",
-      "desc": "Robbers attempt the most perfect robbery in history."
-    }
-  ],
+  "popular": [],
+  "action": [],
+  "images": [],
+  "comedy": [],
+  "picks": [],
   "deletedIds": []
 }
