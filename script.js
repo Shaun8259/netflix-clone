@@ -5,14 +5,138 @@ var LOCAL_API_URL = '/api/catalog';
 var CLOUD_API_URL = 'https://jsonblob.com/api/jsonBlob/019fba03-4f37-74ec-b42d-84ce7be97abc';
 var LOCAL_CATALOG_KEY = 'hodishaunflix_local_catalog_v10';
 
-// ===== REAL MOVIES & IMAGES CATALOG (Admin Uploads Only) =====
+// ===== REAL MOVIES & IMAGES CATALOG =====
 var defaultMovies = {
-    trending: [],
-    popular: [],
-    action: [],
-    comedy: [],
-    picks: [],
-    images: [],
+    trending: [
+        {
+            id: 'usr_1785567942936_n7s1d',
+            title: "Love or Lust",
+            year: "2024",
+            rating: "U/A 16+",
+            img: "https://picsum.photos/seed/loveorlust/1280/720",
+            video: "https://commondatastorage.googleapis.com/gtv-videos-bucket/sample/ForBiggerBlazes.mp4",
+            genres: ['Action', 'Drama'],
+            match: '99% match',
+            seasons: '61.9 MB',
+            desc: "Lust touches the skin; love touches the soul. One is a fleeting flame, the other is an eternal light. ✨ ❤️",
+            isUploaded: true
+        },
+        {
+            id: 'm_ikka',
+            title: "IKKA",
+            year: "2024",
+            rating: "U/A 16+",
+            img: "https://picsum.photos/seed/ikka/1280/720",
+            video: "https://commondatastorage.googleapis.com/gtv-videos-bucket/sample/BigBuckBunny.mp4",
+            genres: ['Legal', 'Drama', 'Thriller'],
+            match: '98% match',
+            seasons: '1 Season',
+            desc: "To save a loved one, lawyer Arjun Mehra must do the unthinkable — defend a powerful man accused of a grisly crime. With Tillotama Shome and Dia Mirza."
+        },
+        {
+            id: 'm_squid',
+            title: "Squid Game",
+            year: "2024",
+            rating: "U/A 18+ [A]",
+            img: "https://picsum.photos/seed/squid/1280/720",
+            video: "https://commondatastorage.googleapis.com/gtv-videos-bucket/sample/ElephantsDream.mp4",
+            genres: ['Thriller', 'Drama', 'Mystery'],
+            match: '99% match',
+            seasons: '2 Seasons',
+            desc: "Hundreds of cash-strapped players accept a strange invitation to compete in children's games with deadly high stakes."
+        }
+    ],
+    popular: [
+        {
+            id: 'm_witcher',
+            title: "The Witcher",
+            year: "2023",
+            rating: "U/A 18+ [A]",
+            img: "https://picsum.photos/seed/witcher/1280/720",
+            video: "https://commondatastorage.googleapis.com/gtv-videos-bucket/sample/ForBiggerBlazes.mp4",
+            genres: ['Fantasy', 'Action', 'Adventure'],
+            match: '95% match',
+            seasons: '3 Seasons',
+            desc: "Geralt of Rivia, a mutated monster-hunter for hire, journeys toward his destiny in a turbulent world."
+        },
+        {
+            id: 'm_queen',
+            title: "The Queen's Gambit",
+            year: "2023",
+            rating: "U/A 16+",
+            img: "https://picsum.photos/seed/queens/1280/720",
+            video: "https://commondatastorage.googleapis.com/gtv-videos-bucket/sample/ForBiggerEscapes.mp4",
+            genres: ['Drama', 'Book Adaptation'],
+            match: '97% match',
+            seasons: 'Limited Series',
+            desc: "In a 1950s orphanage, a young girl reveals an astonishing talent for chess and begins an unlikely journey to stardom."
+        }
+    ],
+    action: [
+        {
+            id: 'm_gentlemen',
+            title: "The Gentlemen",
+            year: "2024",
+            rating: "U/A 18+ [A]",
+            img: "https://picsum.photos/seed/gentlemen/1280/720",
+            video: "https://commondatastorage.googleapis.com/gtv-videos-bucket/sample/ForBiggerFun.mp4",
+            genres: ['Action', 'Crime', 'Comedy'],
+            match: '94% match',
+            seasons: '1 Season',
+            desc: "When aristocratic Eddie inherits the family estate, he discovers it's home to an enormous weed empire."
+        }
+    ],
+    comedy: [
+        {
+            id: 'm_bridgerton',
+            title: "Bridgerton",
+            year: "2024",
+            rating: "U/A 16+",
+            img: "https://picsum.photos/seed/bridgerton/1280/720",
+            video: "https://commondatastorage.googleapis.com/gtv-videos-bucket/sample/ForBiggerJoyrides.mp4",
+            genres: ['Romance', 'Period Drama'],
+            match: '92% match',
+            seasons: '3 Seasons',
+            desc: "Wealth, lust, and betrayal set against the backdrop of Regency era England, seen through the eyes of the powerful Bridgerton family."
+        }
+    ],
+    picks: [
+        {
+            id: 'm_moneyheist',
+            title: "Money Heist",
+            year: "2023",
+            rating: "U/A 18+ [A]",
+            img: "https://picsum.photos/seed/moneyheist/1280/720",
+            video: "https://commondatastorage.googleapis.com/gtv-videos-bucket/sample/TearsOfSteel.mp4",
+            genres: ['Crime', 'Thriller'],
+            match: '99% match',
+            seasons: '5 Seasons',
+            desc: "An unusual group of robbers attempt to carry out the most perfect robbery in Spanish history."
+        }
+    ],
+    images: [
+        {
+            id: 'img_stiller_1',
+            title: "IKKA Official Movie Still",
+            desc: "High quality wallpaper still from IKKA courtroom scene.",
+            img: "https://picsum.photos/seed/ikka/1280/720",
+            isImage: true
+        },
+        {
+            id: 'img_stiller_2',
+            title: "Squid Game Key Art",
+            desc: "Official promotional wallpaper for Squid Game Season 2.",
+            img: "https://picsum.photos/seed/squid/1280/720",
+            isImage: true
+        },
+        {
+            id: 'img_stiller_3',
+            title: "The Witcher Cinematic Wallpaper",
+            desc: "Geralt of Rivia poster artwork.",
+            img: "https://picsum.photos/seed/witcher/1280/720",
+            isImage: true
+        }
+    ],
     deletedIds: []
 };
 
