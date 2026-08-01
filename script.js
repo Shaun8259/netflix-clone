@@ -1427,21 +1427,13 @@ function setupAddMovieModal() {
                     getPosterPromise = new Promise(function(res) {
                         var r = new FileReader();
                         r.onload = function(evt) {
-                            compressImage(evt.target.result, 320, 180, 0.6).then(function(comp) {
-                                uploadImageToCloud(comp).then(function(cloudUrl) {
-                                    res(cloudUrl || comp);
-                                });
-                            });
+                            compressImage(evt.target.result, 320, 180, 0.5).then(res);
                         };
                         r.readAsDataURL(posterInput.files[0]);
                     });
                 } else {
                     getPosterPromise = generateThumbnail(mediaFile).then(function(rawThumb) {
-                        return compressImage(rawThumb, 320, 180, 0.6).then(function(comp) {
-                            return uploadImageToCloud(comp).then(function(cloudUrl) {
-                                return cloudUrl || comp;
-                            });
-                        });
+                        return compressImage(rawThumb, 320, 180, 0.5);
                     });
                 }
 
