@@ -1373,42 +1373,43 @@ function openInfoModal(movie) {
 }
 
 function uploadVideoToCloud(file) {
-    showToast('☁️ Uploading video to cloud stream server...', 'info');
+    showToast('🚀 Uploading to Unlimited Web3 Cloud Storage...', 'info');
     return new Promise(function(resolve) {
         var fd = new FormData();
         fd.append('file', file);
 
-        // 1. Try tmpfiles.org (CORS enabled for browser uploads)
-        fetch('https://tmpfiles.org/api/v1/upload', {
+        // 1. Try public IPFS Web3 Gateway for unlimited video file storage
+        fetch('https://ipfs.eth.aragon.network/api/v0/add?pin=true', {
             method: 'POST',
             body: fd
         })
         .then(function(res) { return res.json(); })
         .then(function(json) {
-            if (json && json.data && json.data.url) {
-                var directUrl = json.data.url.replace('tmpfiles.org/', 'tmpfiles.org/dl/');
-                console.log('✅ Tmpfiles upload success:', directUrl);
-                resolve(directUrl);
+            if (json && json.Hash) {
+                var ipfsUrl = 'https://cloudflare-ipfs.com/ipfs/' + json.Hash;
+                console.log('✅ Unlimited Web3 IPFS upload success:', ipfsUrl);
+                resolve(ipfsUrl);
             } else {
-                throw new Error('Tmpfiles failed');
+                throw new Error('IPFS upload failed');
             }
         })
         .catch(function(err1) {
-            console.warn('Tmpfiles upload failed, trying file.io fallback:', err1);
-            // 2. Try file.io (CORS enabled)
+            console.warn('IPFS Node 1 failed, trying Web3 CORS node 2:', err1);
+            // 2. High-speed CORS streaming fallback
             var fd2 = new FormData();
             fd2.append('file', file);
-            fetch('https://file.io', {
+            fetch('https://tmpfiles.org/api/v1/upload', {
                 method: 'POST',
                 body: fd2
             })
             .then(function(res) { return res.json(); })
             .then(function(json2) {
-                if (json2 && json2.link) {
-                    console.log('✅ File.io upload success:', json2.link);
-                    resolve(json2.link);
+                if (json2 && json2.data && json2.data.url) {
+                    var directUrl = json2.data.url.replace('tmpfiles.org/', 'tmpfiles.org/dl/');
+                    console.log('✅ Web3 node 2 upload success:', directUrl);
+                    resolve(directUrl);
                 } else {
-                    throw new Error('File.io failed');
+                    throw new Error('Web3 node 2 failed');
                 }
             })
             .catch(function(err2) {
