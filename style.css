@@ -236,8 +236,7 @@ body:not(.is-admin) .admin-only {
 .hero-bg {
   position: absolute; top: 0; left: 0; right: 0; bottom: 0;
   background: linear-gradient(135deg, #09131a 0%, #15222e 40%, #0d1217 100%);
-  z-index: 0; background-size: cover; background-position: center top; transition: background 0.5s ease;
-  image-rendering: -webkit-optimize-contrast;
+  z-index: 0; background-size: cover; background-position: center; transition: background 0.5s ease;
 }
 
 .hero-bg::before {

@@ -5,32 +5,7 @@ var LOCAL_API_URL = '/api/catalog';
 var CLOUD_API_URL = 'https://jsonblob.com/api/jsonBlob/019fba03-4f37-74ec-b42d-84ce7be97abc';
 var LOCAL_CATALOG_KEY = 'hodishaunflix_local_catalog_v10';
 
-// ===== CINEMATIC POSTER GENERATOR (Zero Network Dependency, 100% Instant HD Visuals) =====
-function generateCinematicPoster(title, color1, color2, tag) {
-    var svg = '<svg xmlns="http://www.w3.org/2000/svg" width="1280" height="720" viewBox="0 0 1280 720">' +
-        '<defs>' +
-            '<linearGradient id="bg" x1="0%" y1="0%" x2="100%" y2="100%">' +
-                '<stop offset="0%" stop-color="' + (color1 || '#1a0808') + '"/>' +
-                '<stop offset="50%" stop-color="' + (color2 || '#0a0303') + '"/>' +
-                '<stop offset="100%" stop-color="#000000"/>' +
-            '</linearGradient>' +
-            '<linearGradient id="overlay" x1="0%" y1="100%" x2="0%" y2="0%">' +
-                '<stop offset="0%" stop-color="#141414" stop-opacity="0.95"/>' +
-                '<stop offset="60%" stop-color="#141414" stop-opacity="0.4"/>' +
-                '<stop offset="100%" stop-color="transparent"/>' +
-            '</linearGradient>' +
-        '</defs>' +
-        '<rect width="1280" height="720" fill="url(#bg)"/>' +
-        '<circle cx="1000" cy="200" r="350" fill="' + (color1 || '#e50914') + '" opacity="0.25"/>' +
-        '<circle cx="200" cy="500" r="250" fill="' + (color2 || '#330000') + '" opacity="0.3"/>' +
-        '<rect width="1280" height="720" fill="url(#overlay)"/>' +
-        '<text x="80" y="520" font-family="system-ui, -apple-system, sans-serif" font-size="76" font-weight="900" fill="#ffffff" letter-spacing="-1">' + title + '</text>' +
-        '<text x="80" y="575" font-family="system-ui, -apple-system, sans-serif" font-size="26" font-weight="800" fill="#e50914" letter-spacing="4">' + (tag || 'HODISHAUNFLIX ORIGINAL') + '</text>' +
-        '</svg>';
-    return 'data:image/svg+xml;charset=utf-8,' + encodeURIComponent(svg);
-}
-
-// ===== REAL MOVIES & IMAGES CATALOG =====
+// ===== REAL MOVIES & IMAGES CATALOG (Admin Uploads Only) =====
 var defaultMovies = {
     trending: [
         {
@@ -38,7 +13,7 @@ var defaultMovies = {
             title: "Love or Lust",
             year: "2024",
             rating: "U/A 16+",
-            img: generateCinematicPoster('Love or Lust', '#3a0628', '#14020e', 'MY MOVIE • 2024'),
+            img: "https://picsum.photos/seed/loveorlust/1280/720",
             video: "https://commondatastorage.googleapis.com/gtv-videos-bucket/sample/ForBiggerBlazes.mp4",
             genres: ['Action', 'Drama'],
             match: '99% match',
@@ -51,7 +26,7 @@ var defaultMovies = {
             title: "IKKA",
             year: "2024",
             rating: "U/A 16+",
-            img: generateCinematicPoster('IKKA', '#2b0707', '#0e0202', 'LEGAL THRILLER • 2024'),
+            img: "https://picsum.photos/seed/ikka/1280/720",
             video: "https://commondatastorage.googleapis.com/gtv-videos-bucket/sample/BigBuckBunny.mp4",
             genres: ['Legal', 'Drama', 'Thriller'],
             match: '98% match',
@@ -63,7 +38,7 @@ var defaultMovies = {
             title: "Squid Game",
             year: "2024",
             rating: "U/A 18+ [A]",
-            img: generateCinematicPoster('Squid Game', '#082626', '#030f0f', 'SEASON 2 • THRILLER'),
+            img: "https://picsum.photos/seed/squid/1280/720",
             video: "https://commondatastorage.googleapis.com/gtv-videos-bucket/sample/ElephantsDream.mp4",
             genres: ['Thriller', 'Drama', 'Mystery'],
             match: '99% match',
@@ -77,7 +52,7 @@ var defaultMovies = {
             title: "The Witcher",
             year: "2023",
             rating: "U/A 18+ [A]",
-            img: generateCinematicPoster('The Witcher', '#0d192b', '#040912', 'FANTASY ACTION'),
+            img: "https://picsum.photos/seed/witcher/1280/720",
             video: "https://commondatastorage.googleapis.com/gtv-videos-bucket/sample/ForBiggerBlazes.mp4",
             genres: ['Fantasy', 'Action', 'Adventure'],
             match: '95% match',
@@ -89,7 +64,7 @@ var defaultMovies = {
             title: "The Queen's Gambit",
             year: "2023",
             rating: "U/A 16+",
-            img: generateCinematicPoster("Queen's Gambit", '#082414', '#020e07', 'DRAMA SERIES'),
+            img: "https://picsum.photos/seed/queens/1280/720",
             video: "https://commondatastorage.googleapis.com/gtv-videos-bucket/sample/ForBiggerEscapes.mp4",
             genres: ['Drama', 'Book Adaptation'],
             match: '97% match',
@@ -103,7 +78,7 @@ var defaultMovies = {
             title: "The Gentlemen",
             year: "2024",
             rating: "U/A 18+ [A]",
-            img: generateCinematicPoster('The Gentlemen', '#291e05', '#0f0a01', 'ACTION CRIME'),
+            img: "https://picsum.photos/seed/gentlemen/1280/720",
             video: "https://commondatastorage.googleapis.com/gtv-videos-bucket/sample/ForBiggerFun.mp4",
             genres: ['Action', 'Crime', 'Comedy'],
             match: '94% match',
@@ -117,7 +92,7 @@ var defaultMovies = {
             title: "Bridgerton",
             year: "2024",
             rating: "U/A 16+",
-            img: generateCinematicPoster('Bridgerton', '#290629', '#0d020d', 'ROMANCE DRAMA'),
+            img: "https://picsum.photos/seed/bridgerton/1280/720",
             video: "https://commondatastorage.googleapis.com/gtv-videos-bucket/sample/ForBiggerJoyrides.mp4",
             genres: ['Romance', 'Period Drama'],
             match: '92% match',
@@ -131,7 +106,7 @@ var defaultMovies = {
             title: "Money Heist",
             year: "2023",
             rating: "U/A 18+ [A]",
-            img: generateCinematicPoster('Money Heist', '#330407', '#120102', 'CRIME THRILLER'),
+            img: "https://picsum.photos/seed/moneyheist/1280/720",
             video: "https://commondatastorage.googleapis.com/gtv-videos-bucket/sample/TearsOfSteel.mp4",
             genres: ['Crime', 'Thriller'],
             match: '99% match',
@@ -144,21 +119,21 @@ var defaultMovies = {
             id: 'img_stiller_1',
             title: "IKKA Official Movie Still",
             desc: "High quality wallpaper still from IKKA courtroom scene.",
-            img: generateCinematicPoster('IKKA Courtroom', '#2b0707', '#0e0202', 'MOVIE WALLPAPER'),
+            img: "https://picsum.photos/seed/ikka/1280/720",
             isImage: true
         },
         {
             id: 'img_stiller_2',
             title: "Squid Game Key Art",
             desc: "Official promotional wallpaper for Squid Game Season 2.",
-            img: generateCinematicPoster('Squid Game Art', '#082626', '#030f0f', 'CINEMATIC KEY ART'),
+            img: "https://picsum.photos/seed/squid/1280/720",
             isImage: true
         },
         {
             id: 'img_stiller_3',
             title: "The Witcher Cinematic Wallpaper",
             desc: "Geralt of Rivia poster artwork.",
-            img: generateCinematicPoster('Witcher Artwork', '#0d192b', '#040912', 'POSTER ARTWORK'),
+            img: "https://picsum.photos/seed/witcher/1280/720",
             isImage: true
         }
     ],
@@ -188,34 +163,13 @@ function loadLocalCatalog() {
                         movies[k] = data[k];
                     }
                 });
+                if (Array.isArray(data.deletedIds)) {
+                    movies.deletedIds = data.deletedIds;
+                }
             }
         }
     } catch(e) {
         console.error('Local storage load error:', e);
-    }
-    // Always keep deletedIds clean on startup to prevent blank catalog filtering
-    movies.deletedIds = [];
-
-    if (typeof dbGetAllMovies === 'function') {
-        dbGetAllMovies().then(function(records) {
-            if (Array.isArray(records) && records.length > 0) {
-                var restoredAny = false;
-                records.forEach(function(rec) {
-                    if (rec && rec.movieData) {
-                        var item = rec.movieData;
-                        var cat = item.isImage ? 'images' : 'trending';
-                        if (!movies[cat]) movies[cat] = [];
-                        if (!movies[cat].some(function(m) { return m.id === item.id; })) {
-                            movies[cat].unshift(item);
-                            restoredAny = true;
-                        }
-                    }
-                });
-                if (restoredAny && typeof renderRows === 'function') {
-                    renderRows();
-                }
-            }
-        }).catch(function(){});
     }
 }
 
@@ -228,8 +182,8 @@ function compressImage(src, maxW, maxH, quality) {
             var canvas = document.createElement('canvas');
             var w = img.width;
             var h = img.height;
-            maxW = maxW || 1280;
-            maxH = maxH || 720;
+            maxW = maxW || 450;
+            maxH = maxH || 250;
 
             if (w > maxW) {
                 h = Math.round((h * maxW) / w);
@@ -243,10 +197,8 @@ function compressImage(src, maxW, maxH, quality) {
             canvas.width = w;
             canvas.height = h;
             var ctx = canvas.getContext('2d');
-            ctx.imageSmoothingEnabled = true;
-            ctx.imageSmoothingQuality = 'high';
             ctx.drawImage(img, 0, 0, w, h);
-            resolve(canvas.toDataURL('image/jpeg', quality || 0.85));
+            resolve(canvas.toDataURL('image/jpeg', quality || 0.75));
         };
         img.onerror = function() {
             resolve(src);
@@ -317,32 +269,29 @@ function mergeCloudCatalog(data) {
 
     var keys = ['trending', 'popular', 'action', 'comedy', 'picks', 'images'];
     var hasChanges = false;
-function mergeCloudCatalog(data) {
-    if (!data) return;
-    if (!movies.deletedIds) movies.deletedIds = [];
-
-    var keys = ['trending', 'popular', 'action', 'comedy', 'picks', 'images'];
-    var hasChanges = false;
     var delIds = movies.deletedIds || [];
 
     keys.forEach(function(k) {
         var map = {};
 
-        // 1. Keep all existing local items first (especially Admin uploaded items)
+        // 1. Default items
+        if (Array.isArray(defaultMovies[k])) {
+            defaultMovies[k].forEach(function(item) {
+                if (!delIds.includes(item.id)) map[item.id] = item;
+            });
+        }
+
+        // 2. Local items
         if (Array.isArray(movies[k])) {
             movies[k].forEach(function(item) {
                 if (!delIds.includes(item.id)) map[item.id] = item;
             });
         }
 
-        // 2. Merge cloud items (do not overwrite local uploaded items with older cloud data)
+        // 3. Shared API items (highest priority)
         if (Array.isArray(data[k])) {
             data[k].forEach(function(item) {
-                if (!delIds.includes(item.id)) {
-                    if (!map[item.id] || (!map[item.id].isUploaded && item.isUploaded)) {
-                        map[item.id] = item;
-                    }
-                }
+                if (!delIds.includes(item.id)) map[item.id] = item;
             });
         }
 
@@ -350,7 +299,7 @@ function mergeCloudCatalog(data) {
             return !delIds.includes(item.id);
         });
 
-        // Ensure uploaded items remain at top
+        // Uploaded items first
         mergedList.sort(function(a, b) {
             if (a.isUploaded && !b.isUploaded) return -1;
             if (!a.isUploaded && b.isUploaded) return 1;
@@ -370,6 +319,8 @@ function mergeCloudCatalog(data) {
 }
 
 function fetchCloudCatalog() {
+    // On Vercel (no local server), go directly to cloud API
+    // On localhost, try local API first (faster), then cloud as backup
     var isLocalhost = window.location.hostname === 'localhost' || window.location.hostname === '127.0.0.1';
 
     if (isLocalhost) {
@@ -422,10 +373,23 @@ function syncCloudCatalog() {
         });
     });
 
-    cloudPayload.deletedIds = movies.deletedIds || [];
+    cloudPayload.deletedIds = [];
 
     var payload = JSON.stringify(cloudPayload);
     var payloadKB = (payload.length / 1024).toFixed(1);
+
+    // If payload exceeds 9KB, compress extra fields to prevent 400 Bad Request
+    if (payload.length > 9000) {
+        keys.forEach(function(k) {
+            if (!Array.isArray(cloudPayload[k])) return;
+            cloudPayload[k].forEach(function(item) {
+                if (item.img && typeof item.img === 'string' && item.img.length > 2500) {
+                    item.img = 'https://picsum.photos/seed/' + encodeURIComponent(item.id) + '/400/225';
+                }
+            });
+        });
+        payload = JSON.stringify(cloudPayload);
+    }
 
     // Sync to local server API silently if available
     fetch(LOCAL_API_URL, {
@@ -434,32 +398,28 @@ function syncCloudCatalog() {
         body: JSON.stringify(movies)
     }).catch(function(){});
 
-    // Sync to cloud API with instant retry & auto-recreation
+    // Sync to cloud API silently with auto-recreation
     return fetch(CLOUD_API_URL, {
         method: 'PUT',
         headers: { 'Content-Type': 'application/json' },
         body: payload
     })
     .then(function(res) {
-        if (!res.ok) {
+        if (res.status === 404) {
+            // Blob expired: silently create new Blob
             return fetch('https://jsonblob.com/api/jsonBlob', {
                 method: 'POST',
                 headers: { 'Content-Type': 'application/json' },
                 body: payload
-            })
-            .then(function(cRes) {
-                var loc = cRes.headers.get('Location');
-                if (loc) {
-                    CLOUD_API_URL = loc.replace('http:', 'https:');
-                    console.log('✅ Created fresh Cloud API endpoint:', CLOUD_API_URL);
-                }
+            }).then(function(createRes) {
+                console.log('✅ Recreated fresh cloud blob, status:', createRes.status);
             });
-        } else {
-            console.log('✅ Cloud catalog synced successfully! Size:', payloadKB + 'KB');
+        } else if (res.ok) {
+            console.log('✅ Cloud catalog synced silently. Size:', payloadKB + 'KB');
         }
     })
     .catch(function(err) {
-        console.warn('Cloud sync background error:', err);
+        console.warn('Cloud sync background retry:', err);
     });
 }
 
@@ -643,20 +603,18 @@ function generateThumbnail(file) {
 
         video.addEventListener('seeked', function() {
             var canvas = document.createElement('canvas');
-            canvas.width = 1280;
-            canvas.height = 720;
+            canvas.width = 400;
+            canvas.height = 225;
             var ctx = canvas.getContext('2d');
-            ctx.imageSmoothingEnabled = true;
-            ctx.imageSmoothingQuality = 'high';
             ctx.drawImage(video, 0, 0, canvas.width, canvas.height);
-            var thumb = canvas.toDataURL('image/jpeg', 0.85);
+            var thumb = canvas.toDataURL('image/jpeg', 0.7);
             URL.revokeObjectURL(url);
             resolve(thumb);
         });
 
         video.addEventListener('error', function() {
             URL.revokeObjectURL(url);
-            resolve('https://picsum.photos/seed/' + Math.random() + '/1280/720');
+            resolve('https://picsum.photos/seed/' + Math.random() + '/400/225');
         });
     });
 }
@@ -874,34 +832,13 @@ function renderRows() {
     ];
 
     var totalMoviesCount = 0;
-    rowMappings.forEach(function(ref) {
-        totalMoviesCount += (ref.data ? ref.data.length : 0);
-    });
-
-    if (totalMoviesCount === 0 && defaultMovies) {
-        movies.deletedIds = [];
-        delIds = [];
-        var keys = ['trending', 'popular', 'action', 'comedy', 'picks', 'images'];
-        keys.forEach(function(k) {
-            if (Array.isArray(defaultMovies[k])) {
-                movies[k] = JSON.parse(JSON.stringify(defaultMovies[k]));
-            }
-        });
-        saveLocalCatalog();
-        rowMappings = [
-            { id: 'trendingRow', data: (movies.trending || []) },
-            { id: 'popularRow', data: (movies.popular || []) },
-            { id: 'actionRow', data: (movies.action || []) },
-            { id: 'imagesRow', data: (movies.images || []) },
-            { id: 'comedyRow', data: (movies.comedy || []) },
-            { id: 'picksRow', data: (movies.picks || []) }
-        ];
-    }
 
     rowMappings.forEach(function(ref) {
         var container = document.getElementById(ref.id);
         if (container) {
             container.innerHTML = '';
+            totalMoviesCount += (ref.data ? ref.data.length : 0);
+
             if (!ref.data || ref.data.length === 0) {
                 container.innerHTML = '<div class="row-empty-hint">No media in this row yet.</div>';
             } else {
@@ -1073,7 +1010,12 @@ function filterCategoryRows(filter) {
 // ===== SCROLL REVEAL =====
 function setupScrollReveal() {
     var rows = document.querySelectorAll('.row');
-    rows.forEach(function(r) { r.classList.add('visible'); });
+    var obs = new IntersectionObserver(function(entries) {
+        entries.forEach(function(e) {
+            if (e.isIntersecting) { e.target.classList.add('visible'); obs.unobserve(e.target); }
+        });
+    }, { threshold: 0.05, rootMargin: '0px 0px -40px 0px' });
+    rows.forEach(function(r) { obs.observe(r); });
 }
 
 // ===== MOBILE MENU =====
@@ -1398,49 +1340,6 @@ function openInfoModal(movie) {
         banner.style.backgroundImage = 'url("' + movie.img + '")';
     }
 
-    var changePosterBtn = document.getElementById('infoModalChangePosterBtn');
-    var changePosterInput = document.getElementById('changePosterFileInput');
-
-    if (changePosterBtn && changePosterInput) {
-        changePosterBtn.onclick = function(e) {
-            e.stopPropagation();
-            changePosterInput.click();
-        };
-
-        changePosterInput.onchange = function() {
-            if (changePosterInput.files.length) {
-                var file = changePosterInput.files[0];
-                showToast('Updating thumbnail for "' + movie.title + '"...', 'info');
-                var reader = new FileReader();
-                reader.onload = function(evt) {
-                    compressImage(evt.target.result, 1280, 720, 0.85).then(function(compressedImg) {
-                        movie.img = compressedImg;
-                        if (banner) banner.style.backgroundImage = 'url("' + compressedImg + '")';
-
-                        var catKeys = Object.keys(movies);
-                        catKeys.forEach(function(ck) {
-                            if (Array.isArray(movies[ck])) {
-                                movies[ck].forEach(function(item) {
-                                    if (item.id === movie.id) {
-                                        item.img = compressedImg;
-                                    }
-                                });
-                            }
-                        });
-
-                        updateHeroBanner(movie);
-                        saveLocalCatalog();
-                        renderRows();
-                        syncCloudCatalog();
-
-                        showToast('🎉 Custom poster updated for "' + movie.title + '" across all devices!', 'success');
-                    });
-                };
-                reader.readAsDataURL(file);
-            }
-        };
-    }
-
     modal.classList.add('open');
 
     function close() { modal.classList.remove('open'); }
@@ -1667,7 +1566,7 @@ function setupAddMovieModal() {
             if (isImageFile && mediaFile) {
                 var reader = new FileReader();
                 reader.onload = function(evt) {
-                    compressImage(evt.target.result, 1280, 720, 0.85).then(function(compressedImg) {
+                    compressImage(evt.target.result, 320, 180, 0.5).then(function(compressedImg) {
                         var newImgObj = {
                             id: mediaId,
                             title: label,
@@ -1707,13 +1606,13 @@ function setupAddMovieModal() {
                     getPosterPromise = new Promise(function(res) {
                         var r = new FileReader();
                         r.onload = function(evt) {
-                            compressImage(evt.target.result, 1280, 720, 0.85).then(res);
+                            compressImage(evt.target.result, 320, 180, 0.5).then(res);
                         };
                         r.readAsDataURL(posterInput.files[0]);
                     });
                 } else if (mediaFile) {
                     getPosterPromise = generateThumbnail(mediaFile).then(function(rawThumb) {
-                        return compressImage(rawThumb, 1280, 720, 0.85);
+                        return compressImage(rawThumb, 320, 180, 0.5);
                     });
                 } else {
                     getPosterPromise = Promise.resolve('');
