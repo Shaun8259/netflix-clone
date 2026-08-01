@@ -1372,50 +1372,75 @@ function openInfoModal(movie) {
     }
 }
 
+function uploadImageToCloud(fileOrDataUrl) {
+    return new Promise(function(resolve) {
+        if (!fileOrDataUrl) { resolve(''); return; }
+        if (typeof fileOrDataUrl === 'string' && fileOrDataUrl.indexOf('http') === 0) {
+            resolve(fileOrDataUrl);
+            return;
+        }
+
+        var blobPromise;
+        if (fileOrDataUrl instanceof File || fileOrDataUrl instanceof Blob) {
+            blobPromise = Promise.resolve(fileOrDataUrl);
+        } else if (typeof fileOrDataUrl === 'string' && fileOrDataUrl.indexOf('data:') === 0) {
+            blobPromise = fetch(fileOrDataUrl).then(function(res) { return res.blob(); });
+        } else {
+            resolve('');
+            return;
+        }
+
+        blobPromise.then(function(blob) {
+            var fd = new FormData();
+            fd.append('file', blob, 'poster.jpg');
+
+            fetch('https://tmpfiles.org/api/v1/upload', {
+                method: 'POST',
+                body: fd
+            })
+            .then(function(res) { return res.json(); })
+            .then(function(json) {
+                if (json && json.data && json.data.url) {
+                    var directUrl = json.data.url.replace('tmpfiles.org/', 'tmpfiles.org/dl/');
+                    console.log('✅ Custom poster uploaded to cloud:', directUrl);
+                    resolve(directUrl);
+                } else {
+                    throw new Error('Poster upload error');
+                }
+            })
+            .catch(function(err) {
+                console.warn('Poster cloud upload failed:', err);
+                resolve('');
+            });
+        }).catch(function() {
+            resolve('');
+        });
+    });
+}
+
 function uploadVideoToCloud(file) {
     showToast('🚀 Uploading to Unlimited Web3 Cloud Storage...', 'info');
     return new Promise(function(resolve) {
         var fd = new FormData();
         fd.append('file', file);
 
-        // 1. Try public IPFS Web3 Gateway for unlimited video file storage
-        fetch('https://ipfs.eth.aragon.network/api/v0/add?pin=true', {
+        fetch('https://tmpfiles.org/api/v1/upload', {
             method: 'POST',
             body: fd
         })
         .then(function(res) { return res.json(); })
-        .then(function(json) {
-            if (json && json.Hash) {
-                var ipfsUrl = 'https://cloudflare-ipfs.com/ipfs/' + json.Hash;
-                console.log('✅ Unlimited Web3 IPFS upload success:', ipfsUrl);
-                resolve(ipfsUrl);
+        .then(function(json2) {
+            if (json2 && json2.data && json2.data.url) {
+                var directUrl = json2.data.url.replace('tmpfiles.org/', 'tmpfiles.org/dl/');
+                console.log('✅ Cloud video upload success:', directUrl);
+                resolve(directUrl);
             } else {
-                throw new Error('IPFS upload failed');
+                throw new Error('Cloud upload error');
             }
         })
-        .catch(function(err1) {
-            console.warn('IPFS Node 1 failed, trying Web3 CORS node 2:', err1);
-            // 2. High-speed CORS streaming fallback
-            var fd2 = new FormData();
-            fd2.append('file', file);
-            fetch('https://tmpfiles.org/api/v1/upload', {
-                method: 'POST',
-                body: fd2
-            })
-            .then(function(res) { return res.json(); })
-            .then(function(json2) {
-                if (json2 && json2.data && json2.data.url) {
-                    var directUrl = json2.data.url.replace('tmpfiles.org/', 'tmpfiles.org/dl/');
-                    console.log('✅ Web3 node 2 upload success:', directUrl);
-                    resolve(directUrl);
-                } else {
-                    throw new Error('Web3 node 2 failed');
-                }
-            })
-            .catch(function(err2) {
-                console.error('All cloud video hostings failed, using sample stream:', err2);
-                resolve(getRandomSampleVideo());
-            });
+        .catch(function(err2) {
+            console.error('All cloud video hostings failed, using sample stream:', err2);
+            resolve(getRandomSampleVideo());
         });
     });
 }
@@ -1535,13 +1560,21 @@ function setupAddMovieModal() {
                     getPosterPromise = new Promise(function(res) {
                         var r = new FileReader();
                         r.onload = function(evt) {
-                            compressImage(evt.target.result, 320, 180, 0.6).then(res);
+                            compressImage(evt.target.result, 320, 180, 0.6).then(function(comp) {
+                                uploadImageToCloud(comp).then(function(cloudUrl) {
+                                    res(cloudUrl || comp);
+                                });
+                            });
                         };
                         r.readAsDataURL(posterInput.files[0]);
                     });
                 } else {
                     getPosterPromise = generateThumbnail(mediaFile).then(function(rawThumb) {
-                        return compressImage(rawThumb, 320, 180, 0.6);
+                        return compressImage(rawThumb, 320, 180, 0.6).then(function(comp) {
+                            return uploadImageToCloud(comp).then(function(cloudUrl) {
+                                return cloudUrl || comp;
+                            });
+                        });
                     });
                 }
 
