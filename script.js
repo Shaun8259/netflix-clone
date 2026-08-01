@@ -47,6 +47,28 @@ function loadLocalCatalog() {
     } catch(e) {
         console.error('Local storage load error:', e);
     }
+
+    if (typeof dbGetAllMovies === 'function') {
+        dbGetAllMovies().then(function(records) {
+            if (Array.isArray(records) && records.length > 0) {
+                var restoredAny = false;
+                records.forEach(function(rec) {
+                    if (rec && rec.movieData) {
+                        var item = rec.movieData;
+                        var cat = item.isImage ? 'images' : 'trending';
+                        if (!movies[cat]) movies[cat] = [];
+                        if (!movies[cat].some(function(m) { return m.id === item.id; })) {
+                            movies[cat].unshift(item);
+                            restoredAny = true;
+                        }
+                    }
+                });
+                if (restoredAny && typeof renderRows === 'function') {
+                    renderRows();
+                }
+            }
+        }).catch(function(){});
+    }
 }
 
 // ===== IMAGE COMPRESSION UTILITY =====
