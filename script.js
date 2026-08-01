@@ -188,14 +188,13 @@ function loadLocalCatalog() {
                         movies[k] = data[k];
                     }
                 });
-                if (Array.isArray(data.deletedIds)) {
-                    movies.deletedIds = data.deletedIds;
-                }
             }
         }
     } catch(e) {
         console.error('Local storage load error:', e);
     }
+    // Always keep deletedIds clean on startup to prevent blank catalog filtering
+    movies.deletedIds = [];
 
     if (typeof dbGetAllMovies === 'function') {
         dbGetAllMovies().then(function(records) {
@@ -880,6 +879,8 @@ function renderRows() {
     });
 
     if (totalMoviesCount === 0 && defaultMovies) {
+        movies.deletedIds = [];
+        delIds = [];
         var keys = ['trending', 'popular', 'action', 'comedy', 'picks', 'images'];
         keys.forEach(function(k) {
             if (Array.isArray(defaultMovies[k])) {
@@ -888,12 +889,12 @@ function renderRows() {
         });
         saveLocalCatalog();
         rowMappings = [
-            { id: 'trendingRow', data: (movies.trending || []).filter(function(m) { return !delIds.includes(m.id); }) },
-            { id: 'popularRow', data: (movies.popular || []).filter(function(m) { return !delIds.includes(m.id); }) },
-            { id: 'actionRow', data: (movies.action || []).filter(function(m) { return !delIds.includes(m.id); }) },
-            { id: 'imagesRow', data: (movies.images || []).filter(function(m) { return !delIds.includes(m.id); }) },
-            { id: 'comedyRow', data: (movies.comedy || []).filter(function(m) { return !delIds.includes(m.id); }) },
-            { id: 'picksRow', data: (movies.picks || []).filter(function(m) { return !delIds.includes(m.id); }) }
+            { id: 'trendingRow', data: (movies.trending || []) },
+            { id: 'popularRow', data: (movies.popular || []) },
+            { id: 'actionRow', data: (movies.action || []) },
+            { id: 'imagesRow', data: (movies.images || []) },
+            { id: 'comedyRow', data: (movies.comedy || []) },
+            { id: 'picksRow', data: (movies.picks || []) }
         ];
     }
 
