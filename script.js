@@ -58,8 +58,8 @@ function compressImage(src, maxW, maxH, quality) {
             var canvas = document.createElement('canvas');
             var w = img.width;
             var h = img.height;
-            maxW = maxW || 450;
-            maxH = maxH || 250;
+            maxW = maxW || 1280;
+            maxH = maxH || 720;
 
             if (w > maxW) {
                 h = Math.round((h * maxW) / w);
@@ -73,8 +73,10 @@ function compressImage(src, maxW, maxH, quality) {
             canvas.width = w;
             canvas.height = h;
             var ctx = canvas.getContext('2d');
+            ctx.imageSmoothingEnabled = true;
+            ctx.imageSmoothingQuality = 'high';
             ctx.drawImage(img, 0, 0, w, h);
-            resolve(canvas.toDataURL('image/jpeg', quality || 0.75));
+            resolve(canvas.toDataURL('image/jpeg', quality || 0.85));
         };
         img.onerror = function() {
             resolve(src);
@@ -466,18 +468,20 @@ function generateThumbnail(file) {
 
         video.addEventListener('seeked', function() {
             var canvas = document.createElement('canvas');
-            canvas.width = 400;
-            canvas.height = 225;
+            canvas.width = 1280;
+            canvas.height = 720;
             var ctx = canvas.getContext('2d');
+            ctx.imageSmoothingEnabled = true;
+            ctx.imageSmoothingQuality = 'high';
             ctx.drawImage(video, 0, 0, canvas.width, canvas.height);
-            var thumb = canvas.toDataURL('image/jpeg', 0.7);
+            var thumb = canvas.toDataURL('image/jpeg', 0.85);
             URL.revokeObjectURL(url);
             resolve(thumb);
         });
 
         video.addEventListener('error', function() {
             URL.revokeObjectURL(url);
-            resolve('https://picsum.photos/seed/' + Math.random() + '/400/225');
+            resolve('https://picsum.photos/seed/' + Math.random() + '/1280/720');
         });
     });
 }
@@ -1218,7 +1222,7 @@ function openInfoModal(movie) {
                 showToast('Updating thumbnail for "' + movie.title + '"...', 'info');
                 var reader = new FileReader();
                 reader.onload = function(evt) {
-                    compressImage(evt.target.result, 320, 180, 0.5).then(function(compressedImg) {
+                    compressImage(evt.target.result, 1280, 720, 0.85).then(function(compressedImg) {
                         movie.img = compressedImg;
                         if (banner) banner.style.backgroundImage = 'url("' + compressedImg + '")';
 
@@ -1472,7 +1476,7 @@ function setupAddMovieModal() {
             if (isImageFile && mediaFile) {
                 var reader = new FileReader();
                 reader.onload = function(evt) {
-                    compressImage(evt.target.result, 320, 180, 0.5).then(function(compressedImg) {
+                    compressImage(evt.target.result, 1280, 720, 0.85).then(function(compressedImg) {
                         var newImgObj = {
                             id: mediaId,
                             title: label,
@@ -1512,13 +1516,13 @@ function setupAddMovieModal() {
                     getPosterPromise = new Promise(function(res) {
                         var r = new FileReader();
                         r.onload = function(evt) {
-                            compressImage(evt.target.result, 320, 180, 0.5).then(res);
+                            compressImage(evt.target.result, 1280, 720, 0.85).then(res);
                         };
                         r.readAsDataURL(posterInput.files[0]);
                     });
                 } else if (mediaFile) {
                     getPosterPromise = generateThumbnail(mediaFile).then(function(rawThumb) {
-                        return compressImage(rawThumb, 320, 180, 0.5);
+                        return compressImage(rawThumb, 1280, 720, 0.85);
                     });
                 } else {
                     getPosterPromise = Promise.resolve('');
