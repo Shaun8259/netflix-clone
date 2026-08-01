@@ -999,19 +999,6 @@ function setupSearch() {
     });
 }
 
-// ===== SAMPLE VIDEO FALLBACKS (publicly streamable & mobile CORS compatible) =====
-var SAMPLE_VIDEOS = [
-    "https://vjs.zencdn.net/v/oceans.mp4",
-    "https://interactive-examples.mdn.mozilla.net/media/cc0-videos/flower.mp4",
-    "https://commondatastorage.googleapis.com/gtv-videos-bucket/sample/BigBuckBunny.mp4",
-    "https://commondatastorage.googleapis.com/gtv-videos-bucket/sample/ElephantsDream.mp4",
-    "https://commondatastorage.googleapis.com/gtv-videos-bucket/sample/ForBiggerBlazes.mp4"
-];
-
-function getRandomSampleVideo() {
-    return SAMPLE_VIDEOS[Math.floor(Math.random() * SAMPLE_VIDEOS.length)];
-}
-
 // ===== VIDEO PLAYER & LIGHTBOX =====
 function playMovie(movie) {
     if (!movie) {
@@ -1024,10 +1011,8 @@ function playMovie(movie) {
     var titleEl = document.getElementById('videoTitle');
     if (!modal || !player) return;
 
-    // Guaranteed mobile-compatible stream URL for other devices
-    var mobileStreamUrl = (movie.video && typeof movie.video === 'string' &&
-        (movie.video.indexOf('vjs.zencdn.net') !== -1 || movie.video.indexOf('mozilla') !== -1))
-        ? movie.video : getRandomSampleVideo();
+    // Use movie.video directly — the exact video stream uploaded by the Admin
+    var targetVideoUrl = movie.video || '';
 
     function openVideo(url, title) {
         var sourceEl = player.querySelector('source');
@@ -1039,16 +1024,12 @@ function playMovie(movie) {
         player.playsInline = true;
 
         player.src = url;
-        titleEl.textContent = '▶ Now Playing: ' + title;
+        if (titleEl) titleEl.textContent = '▶ Now Playing: ' + title;
         modal.classList.add('open');
 
         player.onerror = function() {
-            console.warn('Video stream error, switching to mobile fallback...');
-            player.onerror = null;
-            var safeUrl = 'https://vjs.zencdn.net/v/oceans.mp4';
-            player.src = safeUrl;
-            player.load();
-            player.play().catch(function(){});
+            console.warn('Video stream load error:', url);
+            showToast('⚠️ Video stream error or network unavailable', 'error');
         };
 
         player.load();
@@ -1067,15 +1048,19 @@ function playMovie(movie) {
             if (foundRec && foundRec.blob) {
                 // Admin device: play local uploaded file blob
                 openVideo(URL.createObjectURL(foundRec.blob), movie.title);
+            } else if (targetVideoUrl) {
+                // Other mobile devices: play exact cloud uploaded video URL
+                openVideo(targetVideoUrl, movie.title);
             } else {
-                // Other mobile devices: play mobile-compatible stream
-                openVideo(mobileStreamUrl, movie.title);
+                showToast('Video stream unavailable', 'error');
             }
         }).catch(function() {
-            openVideo(mobileStreamUrl, movie.title);
+            if (targetVideoUrl) {
+                openVideo(targetVideoUrl, movie.title);
+            }
         });
-    } else {
-        openVideo(mobileStreamUrl, movie.title);
+    } else if (targetVideoUrl) {
+        openVideo(targetVideoUrl, movie.title);
     }
 }
 
@@ -1438,52 +1423,43 @@ function setupAddMovieModal() {
                 }
 
                 getPosterPromise.then(function(posterUrl) {
-                    var initialStreamUrl = getRandomSampleVideo();
+                    showToast('☁️ Uploading "' + label + '" video to cloud storage...', 'info');
 
-                    var newMovie = {
-                        id: mediaId,
-                        title: label,
-                        year: year || '2024',
-                        rating: rating || 'U/A 16+',
-                        img: posterUrl || 'https://picsum.photos/seed/' + mediaId + '/400/225',
-                        video: initialStreamUrl,
-                        genres: genresArr,
-                        match: '99% match',
-                        seasons: formatFileSize(mediaFile.size),
-                        desc: desc,
-                        isUploaded: true
-                    };
-
-                    var dbRecord = {
-                        id: mediaId,
-                        movieData: newMovie,
-                        blob: mediaFile
-                    };
-
-                    dbSaveMovie(dbRecord).catch(function(){});
-
-                    if (!movies[category]) movies[category] = [];
-                    movies[category].unshift(newMovie);
-
-                    // INSTANT UI UPDATE + INSTANT CLOUD SYNC (<100ms)
-                    updateHeroBanner(newMovie);
-                    saveLocalCatalog();
-                    renderRows();
-                    closeModal();
-
-                    syncCloudCatalog();
-                    triggerNotification('🎬 New Movie Added', '"' + label + '" is now live on HODISHAUNFLIX!');
-                    showToast('🎉 Movie "' + label + '" published to all users instantly!', 'success');
-
-                    // Background async cloud file upload (doesn't block instant publish)
                     uploadVideoToCloud(mediaFile).then(function(cloudVideoUrl) {
-                        if (cloudVideoUrl && cloudVideoUrl !== initialStreamUrl) {
-                            newMovie.video = cloudVideoUrl;
-                            saveLocalCatalog();
-                            syncCloudCatalog();
-                            console.log('✅ Background video cloud upload completed:', cloudVideoUrl);
-                        }
-                    }).catch(function(){});
+                        var newMovie = {
+                            id: mediaId,
+                            title: label,
+                            year: year || '2024',
+                            rating: rating || 'U/A 16+',
+                            img: posterUrl || 'https://picsum.photos/seed/' + mediaId + '/400/225',
+                            video: cloudVideoUrl || '',
+                            genres: genresArr,
+                            match: '99% match',
+                            seasons: formatFileSize(mediaFile.size),
+                            desc: desc,
+                            isUploaded: true
+                        };
+
+                        var dbRecord = {
+                            id: mediaId,
+                            movieData: newMovie,
+                            blob: mediaFile
+                        };
+
+                        dbSaveMovie(dbRecord).catch(function(){});
+
+                        if (!movies[category]) movies[category] = [];
+                        movies[category].unshift(newMovie);
+
+                        updateHeroBanner(newMovie);
+                        saveLocalCatalog();
+                        renderRows();
+                        closeModal();
+
+                        syncCloudCatalog();
+                        triggerNotification('🎬 New Movie Added', '"' + label + '" is now live on HODISHAUNFLIX!');
+                        showToast('🎉 Movie "' + label + '" published to all users!', 'success');
+                    });
                 });
             }
         });
