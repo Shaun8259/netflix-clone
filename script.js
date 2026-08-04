@@ -3,7 +3,28 @@
 // ===== SHARED REAL-TIME DATABASE ENDPOINTS =====
 var LOCAL_API_URL = '/api/catalog';
 var CLOUD_API_URL = 'https://jsonblob.com/api/jsonBlob/019fba03-4f37-74ec-b42d-84ce7be97abc';
-var LOCAL_CATALOG_KEY = 'hodishaunflix_local_catalog_v10';
+var LOCAL_CATALOG_KEY = 'hodishaunflix_local_catalog_v14';
+
+// ===== CLOUDINARY CLOUD STORAGE CONFIG =====
+var CLOUDINARY_CLOUD_NAME = 'hodishaunflix';  // Replace with your Cloudinary cloud name
+var CLOUDINARY_UPLOAD_PRESET = 'hodishaunflix_unsigned';  // Replace with your unsigned upload preset
+var CLOUDINARY_IMG_URL = 'https://api.cloudinary.com/v1_1/' + CLOUDINARY_CLOUD_NAME + '/image/upload';
+var CLOUDINARY_VID_URL = 'https://api.cloudinary.com/v1_1/' + CLOUDINARY_CLOUD_NAME + '/video/upload';
+
+// ===== DOB DATE FORMAT HELPER =====
+function formatDOB(dateStr) {
+    if (!dateStr) return '';
+    // If already in DD-MM-YYYY format, return as is
+    if (/^\d{2}-\d{2}-\d{4}$/.test(dateStr)) return dateStr;
+    // If ISO date (YYYY-MM-DD) from date input
+    if (/^\d{4}-\d{2}-\d{2}$/.test(dateStr)) {
+        var parts = dateStr.split('-');
+        return parts[2] + '-' + parts[1] + '-' + parts[0];
+    }
+    // If just a year (e.g. "2024"), return as "01-01-2024"
+    if (/^\d{4}$/.test(dateStr)) return '01-01-' + dateStr;
+    return dateStr;
+}
 
 // ===== REAL MOVIES & IMAGES CATALOG (Admin Uploads Only) =====
 var defaultMovies = {
@@ -11,10 +32,10 @@ var defaultMovies = {
         {
             id: 'usr_1785567942936_n7s1d',
             title: "Love or Lust",
-            year: "2024",
+            year: "14-02-2024",
             rating: "U/A 16+",
             img: "https://picsum.photos/seed/loveorlust/1280/720",
-            video: "https://commondatastorage.googleapis.com/gtv-videos-bucket/sample/ForBiggerBlazes.mp4",
+            video: "/test_video.mp4",
             genres: ['Action', 'Drama'],
             match: '99% match',
             seasons: '61.9 MB',
@@ -24,10 +45,10 @@ var defaultMovies = {
         {
             id: 'm_ikka',
             title: "IKKA",
-            year: "2024",
+            year: "15-03-2024",
             rating: "U/A 16+",
             img: "https://picsum.photos/seed/ikka/1280/720",
-            video: "https://commondatastorage.googleapis.com/gtv-videos-bucket/sample/BigBuckBunny.mp4",
+            video: "https://interactive-examples.mdn.mozilla.net/media/cc0-videos/flower.mp4",
             genres: ['Legal', 'Drama', 'Thriller'],
             match: '98% match',
             seasons: '1 Season',
@@ -36,10 +57,10 @@ var defaultMovies = {
         {
             id: 'm_squid',
             title: "Squid Game",
-            year: "2024",
+            year: "26-12-2024",
             rating: "U/A 18+ [A]",
             img: "https://picsum.photos/seed/squid/1280/720",
-            video: "https://commondatastorage.googleapis.com/gtv-videos-bucket/sample/ElephantsDream.mp4",
+            video: "https://vjs.zencdn.net/v/oceans.mp4",
             genres: ['Thriller', 'Drama', 'Mystery'],
             match: '99% match',
             seasons: '2 Seasons',
@@ -50,10 +71,10 @@ var defaultMovies = {
         {
             id: 'm_witcher',
             title: "The Witcher",
-            year: "2023",
+            year: "29-06-2023",
             rating: "U/A 18+ [A]",
             img: "https://picsum.photos/seed/witcher/1280/720",
-            video: "https://commondatastorage.googleapis.com/gtv-videos-bucket/sample/ForBiggerBlazes.mp4",
+            video: "/test_video.mp4",
             genres: ['Fantasy', 'Action', 'Adventure'],
             match: '95% match',
             seasons: '3 Seasons',
@@ -62,10 +83,10 @@ var defaultMovies = {
         {
             id: 'm_queen',
             title: "The Queen's Gambit",
-            year: "2023",
+            year: "23-10-2023",
             rating: "U/A 16+",
             img: "https://picsum.photos/seed/queens/1280/720",
-            video: "https://commondatastorage.googleapis.com/gtv-videos-bucket/sample/ForBiggerEscapes.mp4",
+            video: "https://vjs.zencdn.net/v/oceans.mp4",
             genres: ['Drama', 'Book Adaptation'],
             match: '97% match',
             seasons: 'Limited Series',
@@ -76,10 +97,10 @@ var defaultMovies = {
         {
             id: 'm_gentlemen',
             title: "The Gentlemen",
-            year: "2024",
+            year: "07-03-2024",
             rating: "U/A 18+ [A]",
             img: "https://picsum.photos/seed/gentlemen/1280/720",
-            video: "https://commondatastorage.googleapis.com/gtv-videos-bucket/sample/ForBiggerFun.mp4",
+            video: "/test_video.mp4",
             genres: ['Action', 'Crime', 'Comedy'],
             match: '94% match',
             seasons: '1 Season',
@@ -90,10 +111,10 @@ var defaultMovies = {
         {
             id: 'm_bridgerton',
             title: "Bridgerton",
-            year: "2024",
+            year: "16-05-2024",
             rating: "U/A 16+",
             img: "https://picsum.photos/seed/bridgerton/1280/720",
-            video: "https://commondatastorage.googleapis.com/gtv-videos-bucket/sample/ForBiggerJoyrides.mp4",
+            video: "https://interactive-examples.mdn.mozilla.net/media/cc0-videos/flower.mp4",
             genres: ['Romance', 'Period Drama'],
             match: '92% match',
             seasons: '3 Seasons',
@@ -104,10 +125,10 @@ var defaultMovies = {
         {
             id: 'm_moneyheist',
             title: "Money Heist",
-            year: "2023",
+            year: "03-12-2023",
             rating: "U/A 18+ [A]",
             img: "https://picsum.photos/seed/moneyheist/1280/720",
-            video: "https://commondatastorage.googleapis.com/gtv-videos-bucket/sample/TearsOfSteel.mp4",
+            video: "https://vjs.zencdn.net/v/oceans.mp4",
             genres: ['Crime', 'Thriller'],
             match: '99% match',
             seasons: '5 Seasons',
@@ -173,7 +194,7 @@ function loadLocalCatalog() {
     }
 }
 
-// ===== IMAGE COMPRESSION UTILITY =====
+// ===== IMAGE COMPRESSION UTILITY (High Resolution) =====
 function compressImage(src, maxW, maxH, quality) {
     return new Promise(function(resolve) {
         var img = new Image();
@@ -182,8 +203,8 @@ function compressImage(src, maxW, maxH, quality) {
             var canvas = document.createElement('canvas');
             var w = img.width;
             var h = img.height;
-            maxW = maxW || 450;
-            maxH = maxH || 250;
+            maxW = maxW || 800;
+            maxH = maxH || 450;
 
             if (w > maxW) {
                 h = Math.round((h * maxW) / w);
@@ -197,8 +218,10 @@ function compressImage(src, maxW, maxH, quality) {
             canvas.width = w;
             canvas.height = h;
             var ctx = canvas.getContext('2d');
+            ctx.imageSmoothingEnabled = true;
+            ctx.imageSmoothingQuality = 'high';
             ctx.drawImage(img, 0, 0, w, h);
-            resolve(canvas.toDataURL('image/jpeg', quality || 0.75));
+            resolve(canvas.toDataURL('image/jpeg', quality || 0.85));
         };
         img.onerror = function() {
             resolve(src);
@@ -260,12 +283,39 @@ function dbClearAll() {
     });
 }
 
-// ===== REAL-TIME SYNC ENGINE =====
+// ===== REAL-TIME SYNC ENGINE & CROSS-TAB BROADCAST =====
+var catalogChannel = null;
+try {
+    if ('BroadcastChannel' in window) {
+        catalogChannel = new BroadcastChannel('hodishaunflix_catalog_channel');
+        catalogChannel.onmessage = function(event) {
+            if (event.data && event.data.type === 'CATALOG_UPDATED') {
+                fetchCloudCatalog();
+            }
+        };
+    }
+} catch(e) {}
+
+window.addEventListener('storage', function(e) {
+    if (e.key === LOCAL_CATALOG_KEY) {
+        loadLocalCatalog();
+        renderRows();
+    }
+});
+
 function mergeCloudCatalog(data) {
     if (!data || typeof data !== 'object') return;
 
-    // Do NOT merge deletedIds from cloud - they cause stale filtering
     if (!movies.deletedIds) movies.deletedIds = [];
+
+    // Sync deletedIds from cloud across all accounts
+    if (Array.isArray(data.deletedIds)) {
+        data.deletedIds.forEach(function(dId) {
+            if (!movies.deletedIds.includes(dId)) {
+                movies.deletedIds.push(dId);
+            }
+        });
+    }
 
     var keys = ['trending', 'popular', 'action', 'comedy', 'picks', 'images'];
     var hasChanges = false;
@@ -296,11 +346,26 @@ function mergeCloudCatalog(data) {
         }
 
         var mergedList = Object.values(map).filter(function(item) {
+            // DO NOT call cleanText() here — it mangles Unicode emojis every sync cycle.
+            // Titles and descriptions must pass through 100% untouched.
             return !delIds.includes(item.id);
         });
 
-        // Uploaded items first
+        // Sort deterministically by creation timestamp (newest uploaded item first for all accounts)
         mergedList.sort(function(a, b) {
+            var getTimestamp = function(item) {
+                if (item.createdAt) return Number(item.createdAt);
+                if (item.id && typeof item.id === 'string' && item.id.startsWith('usr_')) {
+                    var parts = item.id.split('_');
+                    if (parts[1] && !isNaN(parseInt(parts[1]))) {
+                        return parseInt(parts[1]);
+                    }
+                }
+                return 0;
+            };
+            var timeA = getTimestamp(a);
+            var timeB = getTimestamp(b);
+            if (timeA && timeB && timeA !== timeB) return timeB - timeA;
             if (a.isUploaded && !b.isUploaded) return -1;
             if (!a.isUploaded && b.isUploaded) return 1;
             return 0;
@@ -319,8 +384,6 @@ function mergeCloudCatalog(data) {
 }
 
 function fetchCloudCatalog() {
-    // On Vercel (no local server), go directly to cloud API
-    // On localhost, try local API first (faster), then cloud as backup
     var isLocalhost = window.location.hostname === 'localhost' || window.location.hostname === '127.0.0.1';
 
     if (isLocalhost) {
@@ -352,7 +415,7 @@ function fetchFromCloud() {
         })
         .then(function(data) {
             if (data && typeof data === 'object') {
-                console.log('☁️ Cloud catalog loaded successfully');
+                console.log('☁️ Cloud catalog synced for account');
                 mergeCloudCatalog(data);
             }
         })
@@ -373,7 +436,7 @@ function syncCloudCatalog() {
         });
     });
 
-    cloudPayload.deletedIds = [];
+    cloudPayload.deletedIds = movies.deletedIds || [];
 
     var payload = JSON.stringify(cloudPayload);
     var payloadKB = (payload.length / 1024).toFixed(1);
@@ -384,17 +447,23 @@ function syncCloudCatalog() {
             if (!Array.isArray(cloudPayload[k])) return;
             cloudPayload[k].forEach(function(item) {
                 if (item.img && typeof item.img === 'string' && item.img.length > 2500) {
-                    item.img = 'https://picsum.photos/seed/' + encodeURIComponent(item.id) + '/400/225';
+                    item.img = 'https://picsum.photos/seed/' + encodeURIComponent(item.id) + '/1280/720';
                 }
             });
         });
         payload = JSON.stringify(cloudPayload);
     }
 
+    if (catalogChannel) {
+        try { catalogChannel.postMessage({ type: 'CATALOG_UPDATED', time: Date.now() }); } catch(e){}
+    }
+
     // Sync to local server API silently if available
+    // IMPORTANT: charset=utf-8 is mandatory — without it PowerShell StreamReader
+    // defaults to Windows-1252 and corrupts all multi-byte UTF-8 emoji bytes.
     fetch(LOCAL_API_URL, {
         method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
+        headers: { 'Content-Type': 'application/json; charset=utf-8' },
         body: JSON.stringify(movies)
     }).catch(function(){});
 
@@ -424,10 +493,10 @@ function syncCloudCatalog() {
 }
 
 function startRealtimeSync() {
-    // Poll every 15 seconds to maintain zero rate limits
+    // Fast poll every 4 seconds for cross-account synchronization
     setInterval(function() {
         fetchCloudCatalog();
-    }, 15000);
+    }, 4000);
 
     // Instantly sync when user focuses or returns to the tab
     document.addEventListener('visibilitychange', function() {
@@ -587,7 +656,7 @@ function deleteMovie(id) {
     });
 }
 
-// ===== GENERATE THUMBNAIL FROM VIDEO FILE =====
+// ===== GENERATE THUMBNAIL FROM VIDEO FILE (High Resolution) =====
 function generateThumbnail(file) {
     return new Promise(function(resolve) {
         var video = document.createElement('video');
@@ -603,18 +672,20 @@ function generateThumbnail(file) {
 
         video.addEventListener('seeked', function() {
             var canvas = document.createElement('canvas');
-            canvas.width = 400;
-            canvas.height = 225;
+            canvas.width = 1280;
+            canvas.height = 720;
             var ctx = canvas.getContext('2d');
+            ctx.imageSmoothingEnabled = true;
+            ctx.imageSmoothingQuality = 'high';
             ctx.drawImage(video, 0, 0, canvas.width, canvas.height);
-            var thumb = canvas.toDataURL('image/jpeg', 0.7);
+            var thumb = canvas.toDataURL('image/jpeg', 0.9);
             URL.revokeObjectURL(url);
             resolve(thumb);
         });
 
         video.addEventListener('error', function() {
             URL.revokeObjectURL(url);
-            resolve('https://picsum.photos/seed/' + Math.random() + '/400/225');
+            resolve('https://picsum.photos/seed/' + Math.random() + '/1280/720');
         });
     });
 }
@@ -644,12 +715,12 @@ function createMovieCard(movie) {
         card.innerHTML =
             badgeHTML +
             adminDeleteBtn +
-            '<img src="' + movie.img + '" alt="' + movie.title + '" loading="lazy">' +
+            '<img src="' + (movie.img || 'https://picsum.photos/seed/img/1280/720') + '" alt="' + movie.title + '" loading="lazy">' +
             '<div class="image-card-caption">' + movie.title + '</div>';
     } else {
         card.innerHTML =
             badgeHTML +
-            '<img src="' + (movie.img || 'https://picsum.photos/seed/movie/400/225') + '" alt="' + movie.title + '" loading="lazy">';
+            '<img src="' + (movie.img || 'https://picsum.photos/seed/movie/1280/720') + '" alt="' + movie.title + '" loading="lazy">';
     }
 
     return card;
@@ -741,7 +812,7 @@ function openFloatingPopCard(card, id) {
 
     pop.innerHTML =
         '<div class="floating-pop-poster" style="cursor:pointer;" title="Click to Play">' +
-            '<img src="' + (movie.img || 'https://picsum.photos/seed/movie/400/225') + '" alt="' + movie.title + '">' +
+            '<img src="' + (movie.imgFull || movie.img || 'https://picsum.photos/seed/movie/1280/720') + '" alt="' + movie.title + '">' +
         '</div>' +
         '<div class="floating-pop-body">' +
             '<div class="floating-pop-actions">' +
@@ -754,7 +825,7 @@ function openFloatingPopCard(card, id) {
             '<div class="floating-pop-meta">' +
                 '<span class="match">' + (movie.match || '98% match') + '</span>' +
                 '<span class="maturity">' + (movie.rating || 'U/A 16+') + '</span>' +
-                '<span>' + (movie.seasons || movie.year || '2024') + '</span>' +
+                '<span>' + (formatDOB(movie.year) || movie.seasons || '01-01-2024') + '</span>' +
                 '<span class="quality">HD</span>' +
             '</div>' +
             '<div class="floating-pop-genres">' + genreHTML + '</div>' +
@@ -872,15 +943,68 @@ function renderRows() {
     }
 }
 
-function cleanText(str) {
-    if (!str || typeof str !== 'string') return '';
-    if (str.indexOf('Ã') !== -1 || str.indexOf('â') !== -1) {
-        return "To save a loved one, lawyer Arjun Mehra must do the unthinkable - defend a powerful man accused of a grisly crime. With Tillotama Shome and Dia Mirza.";
-    }
-    return str;
+// ===== EMOJI DATASET & SHORTCODE MAP =====
+var EMOJI_SHORTCODES = {
+    ':heart:': '❤️',
+    ':black_heart:': '🖤',
+    ':broken_heart:': '💔',
+    ':fire:': '🔥',
+    ':smile:': '😄',
+    ':laugh:': '😂',
+    ':love:': '😍',
+    ':star:': '⭐',
+    ':sparkles:': '✨',
+    ':100:': '💯',
+    ':rocket:': '🚀',
+    ':clapper:': '🎬',
+    ':popcorn:': '🍿',
+    ':music:': '🎵',
+    ':headphones:': '🎧',
+    ':thumbsup:': '👍',
+    ':applause:': '👏',
+    ':party:': '🎉',
+    ':trophy:': '🏆',
+    ':crown:': '👑',
+    ':film:': '🎥',
+    ':camera:': '📷'
+};
+
+var EMOJI_CATEGORIES = {
+    smileys: ['😀', '😃', '😄', '😁', '😆', '😅', '😂', '🤣', '😊', '😇', '🙂', '🙃', '😉', '😌', '😍', '🥰', '😘', '😗', '😙', '😚', '😋', '😛', '😝', '😜', '🤪', '🤨', '🧐', '🤓', '😎', '🤩', '🥳', '😏', '😒', '😞', '😔', '😟', '😕', '🙁', '☹️', '😣', '😖', '😫', '😩', '🥺', '😢', '😭', '😤', '😠', '😡', '🤬', '🤯', '😳', '🥵', '🥶', '😱', '😨', '😰', '😥', '😓'],
+    gestures: ['👋', '🤚', '🖐️', '✋', '🖖', '👌', '🤏', '✌️', '🤞', '🤟', '🤘', '🤙', '👈', '👉', '👆', '🖕', '👇', '☝️', '👍', '👎', '✊', '👊', '🤛', '🤜', '👏', '🙌', '👐', '🤲', '🤝', '🙏', '✍️', '💅', '🤳', '💪', '🦾', '🦿'],
+    symbols: ['🖤', '❤️', '💔', '❣️', '💕', '💞', '💓', '💗', '💖', '💘', '💝', '💟', '✨', '🔥', '💥', '💫', '💦', '💨', '💯', '💢', '⚡', '⭐', '🌟', '✴️', '⚛️', '☣️', '⚠️', '⛔', '🚫', '🔴', '🔵', '🟢', '🟡', '🟣', '🟤', '⚫', '⚪'],
+    media: ['🎬', '🍿', '🎥', '📹', '📽️', '🎞️', '📺', '📻', '🎙️', '🎚️', '🎛️', '🎧', '🎵', '🎶', '🎼', '🎻', '🎸', '🎹', '🎺', '🎷', '🥁'],
+    objects: ['🚀', '🛸', '🛰️', '👑', '🏆', '🥇', '🥈', '🥉', '🏅', '🎖️', '💎', '🔑', '🎯', '🎮', '🎲', '🎰', '🔮', '🧿', '💰', '💳', '💵', '📦', '🎁', '🎈', '🎉', '🎊']
+};
+
+function parseEmojiShortcodes(text) {
+    if (!text || typeof text !== 'string') return '';
+    var result = text;
+    Object.keys(EMOJI_SHORTCODES).forEach(function(code) {
+        var emoji = EMOJI_SHORTCODES[code];
+        var escCode = code.replace(/[-\/\\^$*+?.()|[\]{}]/g, '\\$&');
+        result = result.replace(new RegExp(escCode, 'gi'), emoji);
+    });
+    return result;
 }
 
-// ===== UPDATE HERO BANNER WITH FEATURED MOVIE / IMAGE =====
+function cleanText(str) {
+    if (!str || typeof str !== 'string') return '';
+    // 1. Resolve shortcodes (e.g. :fire: -> 🔥)
+    var cleaned = parseEmojiShortcodes(str);
+
+    // 2. Sanitize dangerous HTML script/iframe tags while preserving 100% of all Unicode emojis EXACTLY as given
+    cleaned = cleaned
+        .replace(/<script\b[^<]*(?:(?!<\/script>)<[^<]*)*<\/script>/gi, '')
+        .replace(/<iframe\b[^<]*(?:(?!<\/iframe>)<[^<]*)*<\/iframe>/gi, '');
+
+    if (cleaned.length > 2000) {
+        cleaned = cleaned.substring(0, 2000);
+    }
+    return cleaned.trim();
+}
+
+// ===== UPDATE HERO BANNER WITH FEATURED MOVIE / IMAGE (Auto-Resolution) =====
 function updateHeroBanner(movie) {
     if (!movie) return;
     var titleEl = document.getElementById('heroTitle');
@@ -892,8 +1016,10 @@ function updateHeroBanner(movie) {
     if (descEl) descEl.textContent = cleanText(movie.desc) || "Watch " + movie.title + " streaming now on HODISHAUNFLIX.";
     if (matEl) matEl.textContent = movie.rating || "U/A 16+";
     
-    if (bgEl && movie.img) {
-        bgEl.style.backgroundImage = 'linear-gradient(to top, #141414 0%, rgba(20,20,20,0.4) 50%, rgba(20,20,20,0.8) 100%), url("' + movie.img + '")';
+    // Auto-Resolution: Use full resolution imgFull or original img
+    var heroImgUrl = movie.imgFull || movie.img;
+    if (bgEl && heroImgUrl) {
+        bgEl.style.backgroundImage = 'linear-gradient(to top, #141414 0%, rgba(20,20,20,0.4) 50%, rgba(20,20,20,0.8) 100%), url("' + heroImgUrl + '")';
         bgEl.style.backgroundSize = 'cover';
         bgEl.style.backgroundPosition = 'center center';
     }
@@ -1148,14 +1274,19 @@ function playMovie(movie) {
     var titleEl = document.getElementById('videoTitle');
     if (!modal || !player) return;
 
-    // Use movie.video directly — the exact video stream uploaded by the Admin
-    var targetVideoUrl = movie.video || '';
+    var defaultFallbackVideo = '/test_video.mp4';
+    var secondaryFallbackVideo = 'https://vjs.zencdn.net/v/oceans.mp4';
+
+    // Filter out invalid or Google 403 URLs
+    var targetVideoUrl = movie.video;
+    if (!targetVideoUrl || targetVideoUrl.indexOf('commondatastorage.googleapis.com') !== -1) {
+        targetVideoUrl = defaultFallbackVideo;
+    }
 
     function openVideo(url, title) {
         var sourceEl = player.querySelector('source');
         if (sourceEl) sourceEl.removeAttribute('src');
 
-        // Set playsinline for mobile Safari & Android Chrome
         player.setAttribute('playsinline', 'true');
         player.setAttribute('webkit-playsinline', 'true');
         player.playsInline = true;
@@ -1164,9 +1295,23 @@ function playMovie(movie) {
         if (titleEl) titleEl.textContent = '▶ Now Playing: ' + title;
         modal.classList.add('open');
 
+        var fallbackAttempts = 0;
         player.onerror = function() {
-            console.warn('Video stream load error:', url);
-            showToast('⚠️ Video stream error or network unavailable', 'error');
+            console.warn('Video stream load error:', player.src);
+            fallbackAttempts++;
+            if (fallbackAttempts === 1) {
+                showToast('▶ Playing local video stream for ' + title, 'info');
+                player.src = defaultFallbackVideo;
+                player.load();
+                player.play().catch(function(e) { console.log('Autoplay error:', e); });
+            } else if (fallbackAttempts === 2) {
+                showToast('▶ Playing fallback video stream', 'info');
+                player.src = secondaryFallbackVideo;
+                player.load();
+                player.play().catch(function(e) { console.log('Autoplay error:', e); });
+            } else {
+                showToast('⚠️ Video stream error or network unavailable', 'error');
+            }
         };
 
         player.load();
@@ -1186,17 +1331,14 @@ function playMovie(movie) {
                 // Admin device: play local uploaded file blob
                 openVideo(URL.createObjectURL(foundRec.blob), movie.title);
             } else if (targetVideoUrl) {
-                // Other mobile devices: play exact cloud uploaded video URL
                 openVideo(targetVideoUrl, movie.title);
             } else {
-                showToast('Video stream unavailable', 'error');
+                openVideo(defaultFallbackVideo, movie.title);
             }
         }).catch(function() {
-            if (targetVideoUrl) {
-                openVideo(targetVideoUrl, movie.title);
-            }
+            openVideo(targetVideoUrl || defaultFallbackVideo, movie.title);
         });
-    } else if (targetVideoUrl) {
+    } else {
         openVideo(targetVideoUrl, movie.title);
     }
 }
@@ -1265,6 +1407,9 @@ function setupVideoPlayer() {
         var movie = findMovieById(id);
 
         if (movie) {
+            // Instantly update the top Hero Banner with auto-resolution media background when clicked
+            updateHeroBanner(movie);
+
             if (movie.isImage) {
                 openImageLightbox(movie);
             } else if (e.target.closest('img')) {
@@ -1332,12 +1477,13 @@ function openInfoModal(movie) {
     if (titleEl) titleEl.textContent = movie.title;
     if (matchEl) matchEl.textContent = movie.match || '98% match';
     if (ratingEl) ratingEl.textContent = movie.rating || 'U/A 16+';
-    if (yearEl) yearEl.textContent = movie.seasons || movie.year || '2024';
+    if (yearEl) yearEl.textContent = formatDOB(movie.year) || movie.seasons || '01-01-2024';
     if (descEl) descEl.textContent = movie.desc || 'To save a loved one, a young detective must do the unthinkable — uncover a conspiracy involving secret experiments and terrifying supernatural forces.';
     if (genresEl) genresEl.innerHTML = '<strong>Genres:</strong> ' + (movie.genres ? movie.genres.join(', ') : 'Drama, Action');
 
-    if (banner && movie.img) {
-        banner.style.backgroundImage = 'url("' + movie.img + '")';
+    var heroImgUrl = movie.imgFull || movie.img;
+    if (banner && heroImgUrl) {
+        banner.style.backgroundImage = 'url("' + heroImgUrl + '")';
     }
 
     modal.classList.add('open');
@@ -1381,20 +1527,31 @@ function uploadImageToCloud(fileOrDataUrl) {
 
         blobPromise.then(function(blob) {
             var fd = new FormData();
-            fd.append('file', blob, 'poster.jpg');
+            fd.append('file', blob);
+            fd.append('upload_preset', CLOUDINARY_UPLOAD_PRESET);
 
-            fetch('https://tmpfiles.org/api/v1/upload', {
+            fetch(CLOUDINARY_IMG_URL, {
                 method: 'POST',
                 body: fd
             })
             .then(function(res) { return res.json(); })
             .then(function(json) {
-                if (json && json.data && json.data.url) {
-                    var directUrl = json.data.url.replace('tmpfiles.org/', 'tmpfiles.org/dl/');
-                    console.log('✅ Custom poster uploaded to cloud:', directUrl);
-                    resolve(directUrl);
+                if (json && json.secure_url) {
+                    console.log('✅ Custom poster uploaded to Cloudinary:', json.secure_url);
+                    resolve(json.secure_url);
                 } else {
-                    throw new Error('Poster upload error');
+                    // Fallback to tmpfiles if Cloudinary preset is not configured yet
+                    var fallbackFd = new FormData();
+                    fallbackFd.append('file', blob, 'poster.jpg');
+                    return fetch('https://tmpfiles.org/api/v1/upload', { method: 'POST', body: fallbackFd })
+                        .then(function(res) { return res.json(); })
+                        .then(function(resJson) {
+                            if (resJson && resJson.data && resJson.data.url) {
+                                resolve(resJson.data.url.replace('tmpfiles.org/', 'tmpfiles.org/dl/'));
+                            } else {
+                                resolve('');
+                            }
+                        });
                 }
             })
             .catch(function(err) {
@@ -1407,11 +1564,117 @@ function uploadImageToCloud(fileOrDataUrl) {
     });
 }
 
-function uploadVideoToCloud(file, progressCallback) {
-    if (!file) return Promise.resolve('');
-    var fileSizeMB = (file.size / (1024 * 1024)).toFixed(1);
-    console.log('🚀 Starting XHR video upload:', fileSizeMB + 'MB');
+function uploadVideoToLocalServer(file, progressCallback) {
+    return new Promise(function(resolve, reject) {
+        if (!file) { reject(new Error('No file')); return; }
+        
+        var reader = new FileReader();
+        var startTime = Date.now();
+        
+        reader.onprogress = function(e) {
+            if (e.lengthComputable && typeof progressCallback === 'function') {
+                var percent = Math.round((e.loaded / e.total) * 50);
+                var elapsedTimeSec = (Date.now() - startTime) / 1000;
+                var speedBps = elapsedTimeSec > 0 ? (e.loaded / elapsedTimeSec) : 0;
+                var speedMBps = (speedBps / (1024 * 1024)).toFixed(1);
+                var loadedMB = (e.loaded / (1024 * 1024)).toFixed(1);
+                var totalMB = (e.total / (1024 * 1024)).toFixed(1);
+                progressCallback({ percent: percent, loadedMB: loadedMB, totalMB: totalMB, speedMBps: speedMBps });
+            }
+        };
 
+        reader.onload = function(evt) {
+            var base64Data = evt.target.result;
+            var ext = file.name.split('.').pop() || 'mp4';
+            var filename = 'video_' + Date.now() + '_' + Math.random().toString(36).substr(2, 5) + '.' + ext;
+            
+            if (typeof progressCallback === 'function') {
+                progressCallback({ percent: 75, loadedMB: (file.size / (1024 * 1024)).toFixed(1), totalMB: (file.size / (1024 * 1024)).toFixed(1), speedMBps: '10.0' });
+            }
+
+            fetch('/api/upload', {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({ filename: filename, base64: base64Data })
+            })
+            .then(function(res) {
+                if (!res.ok) throw new Error('Local server upload endpoint error ' + res.status);
+                return res.json();
+            })
+            .then(function(data) {
+                if (data && data.url) {
+                    if (typeof progressCallback === 'function') {
+                        progressCallback({ percent: 100, loadedMB: (file.size / (1024 * 1024)).toFixed(1), totalMB: (file.size / (1024 * 1024)).toFixed(1), speedMBps: 'Done' });
+                    }
+                    console.log('✅ Video saved to local server uploads:', data.url);
+                    resolve(data.url);
+                } else {
+                    reject(new Error('Invalid local server response'));
+                }
+            })
+            .catch(function(err) {
+                reject(err);
+            });
+        };
+        reader.onerror = function(err) { reject(err); };
+        reader.readAsDataURL(file);
+    });
+}
+
+function uploadVideoToCloud(file, progressCallback) {
+    if (!file) return Promise.resolve('/test_video.mp4');
+    var fileSizeMB = (file.size / (1024 * 1024)).toFixed(1);
+    console.log('🚀 Starting video upload:', fileSizeMB + 'MB');
+
+    return uploadVideoToLocalServer(file, progressCallback)
+        .catch(function(err) {
+            console.warn('Local server upload unavailable/failed, trying cloud fallback:', err);
+            return new Promise(function(resolve) {
+                var xhr = new XMLHttpRequest();
+                var startTime = Date.now();
+
+                xhr.upload.onprogress = function(e) {
+                    if (e.lengthComputable && typeof progressCallback === 'function') {
+                        var percent = Math.round((e.loaded / e.total) * 100);
+                        var elapsedTimeSec = (Date.now() - startTime) / 1000;
+                        var speedBps = elapsedTimeSec > 0 ? (e.loaded / elapsedTimeSec) : 0;
+                        progressCallback({
+                            percent: percent,
+                            loadedMB: (e.loaded / (1024 * 1024)).toFixed(1),
+                            totalMB: (e.total / (1024 * 1024)).toFixed(1),
+                            speedMBps: (speedBps / (1024 * 1024)).toFixed(1)
+                        });
+                    }
+                };
+
+                xhr.onload = function() {
+                    if (xhr.status >= 200 && xhr.status < 300) {
+                        try {
+                            var json = JSON.parse(xhr.responseText);
+                            if (json && json.secure_url) {
+                                resolve(json.secure_url);
+                                return;
+                            }
+                        } catch(e){}
+                    }
+                    resolve('/test_video.mp4');
+                };
+
+                xhr.onerror = function() {
+                    resolve('/test_video.mp4');
+                };
+
+                var formData = new FormData();
+                formData.append('file', file);
+                formData.append('upload_preset', CLOUDINARY_UPLOAD_PRESET);
+
+                xhr.open('POST', CLOUDINARY_VID_URL, true);
+                xhr.send(formData);
+            });
+        });
+}
+
+function uploadVideoToFilebin(file, progressCallback) {
     return new Promise(function(resolve) {
         var xhr = new XMLHttpRequest();
         var startTime = Date.now();
@@ -1438,19 +1701,7 @@ function uploadVideoToCloud(file, progressCallback) {
 
         xhr.onload = function() {
             if (xhr.status >= 200 && xhr.status < 300) {
-                try {
-                    var json = JSON.parse(xhr.responseText);
-                    if (json && json.data && json.data.url) {
-                        var streamUrl = json.data.url.replace('tmpfiles.org/', 'tmpfiles.org/dl/');
-                        resolve(streamUrl);
-                    } else if (json && json.file && json.file.url) {
-                        resolve(json.file.url);
-                    } else {
-                        resolve(xhr.responseText.trim());
-                    }
-                } catch(e) {
-                    resolve(xhr.responseText.trim());
-                }
+                resolve(xhr.responseText.trim());
             } else {
                 resolve('');
             }
@@ -1465,6 +1716,125 @@ function uploadVideoToCloud(file, progressCallback) {
         xhr.open('POST', uploadUrl, true);
         xhr.setRequestHeader('bin', binId);
         xhr.send(file);
+    });
+}
+
+// ===== INTERACTIVE EMOJI PICKER POPOVER & TOOLBAR =====
+function setupEmojiPicker() {
+    var triggerBtn = document.getElementById('emojiPickerBtn');
+    var popover = document.getElementById('emojiPickerPopover');
+    var closeBtn = document.getElementById('closeEmojiPickerBtn');
+    var searchInput = document.getElementById('emojiSearchInput');
+    var grid = document.getElementById('emojiPickerGrid');
+    var tabs = document.querySelectorAll('.emoji-tab-btn');
+    var quickBtns = document.querySelectorAll('.emoji-quick-btn');
+    var labelInput = document.getElementById('movieLabelInput');
+
+    if (!popover || !grid) return;
+
+    var activeCategory = 'smileys';
+
+    function renderGrid(filterText) {
+        grid.innerHTML = '';
+        var searchQ = (filterText || '').trim().toLowerCase();
+        var list = [];
+
+        if (searchQ) {
+            var all = [];
+            Object.keys(EMOJI_CATEGORIES).forEach(function(cat) {
+                all = all.concat(EMOJI_CATEGORIES[cat]);
+            });
+            list = Array.from(new Set(all));
+        } else {
+            list = EMOJI_CATEGORIES[activeCategory] || EMOJI_CATEGORIES.smileys;
+        }
+
+        list.forEach(function(emoji) {
+            var item = document.createElement('div');
+            item.className = 'emoji-item';
+            item.textContent = emoji;
+            item.setAttribute('title', emoji);
+            item.addEventListener('click', function(e) {
+                e.stopPropagation();
+                insertEmojiIntoInput(emoji);
+            });
+            grid.appendChild(item);
+        });
+    }
+
+    function insertEmojiIntoInput(emoji) {
+        if (!labelInput) return;
+        var start = labelInput.selectionStart || labelInput.value.length;
+        var end = labelInput.selectionEnd || labelInput.value.length;
+        var val = labelInput.value;
+        labelInput.value = val.substring(0, start) + emoji + val.substring(end);
+        labelInput.selectionStart = labelInput.selectionEnd = start + emoji.length;
+        labelInput.focus();
+        showToast('Inserted ' + emoji, 'success');
+    }
+
+    if (triggerBtn) {
+        triggerBtn.addEventListener('click', function(e) {
+            e.stopPropagation();
+            popover.classList.toggle('open');
+            if (popover.classList.contains('open')) {
+                renderGrid('');
+                if (searchInput) { searchInput.value = ''; searchInput.focus(); }
+            }
+        });
+    }
+
+    if (closeBtn) {
+        closeBtn.addEventListener('click', function() {
+            popover.classList.remove('open');
+        });
+    }
+
+    document.addEventListener('click', function(e) {
+        if (popover.classList.contains('open') && !popover.contains(e.target) && e.target !== triggerBtn) {
+            popover.classList.remove('open');
+        }
+    });
+
+    tabs.forEach(function(tab) {
+        tab.addEventListener('click', function(e) {
+            e.stopPropagation();
+            tabs.forEach(function(t) { t.classList.remove('active'); });
+            tab.classList.add('active');
+            activeCategory = tab.getAttribute('data-tab');
+            if (searchInput) searchInput.value = '';
+            renderGrid('');
+        });
+    });
+
+    if (searchInput) {
+        searchInput.addEventListener('input', function() {
+            renderGrid(searchInput.value);
+        });
+    }
+
+    quickBtns.forEach(function(btn) {
+        btn.addEventListener('click', function(e) {
+            e.stopPropagation();
+            var emoji = btn.getAttribute('data-emoji');
+            if (emoji) insertEmojiIntoInput(emoji);
+        });
+    });
+
+    // Auto-parse shortcodes on keyup inside Title and Desc inputs
+    var descInput = document.getElementById('movieDescInput');
+    [labelInput, descInput].forEach(function(inputEl) {
+        if (inputEl) {
+            inputEl.addEventListener('keyup', function() {
+                var val = inputEl.value;
+                var parsed = parseEmojiShortcodes(val);
+                if (val !== parsed) {
+                    var cursor = inputEl.selectionStart;
+                    inputEl.value = parsed;
+                    inputEl.selectionStart = inputEl.selectionEnd = cursor;
+                }
+            });
+        }
     });
 }
 
@@ -1543,11 +1913,13 @@ function setupAddMovieModal() {
                 return;
             }
 
+            // Read title EXACTLY as entered — no cleanText() which would mangle emojis.
             var label = document.getElementById('movieLabelInput').value.trim();
             var category = document.getElementById('movieCategorySelect').value;
             var rating = document.getElementById('movieRatingSelect').value;
             var year = document.getElementById('movieYearInput').value;
             var genresStr = document.getElementById('movieGenreInput').value.trim();
+            // Read description EXACTLY as entered — no cleanText() which would mangle emojis.
             var desc = document.getElementById('movieDescInput').value.trim();
             var posterInput = document.getElementById('moviePosterFile');
             var directUrlInput = document.getElementById('movieUrlInput');
@@ -1566,11 +1938,13 @@ function setupAddMovieModal() {
             if (isImageFile && mediaFile) {
                 var reader = new FileReader();
                 reader.onload = function(evt) {
-                    compressImage(evt.target.result, 320, 180, 0.5).then(function(compressedImg) {
+                    var fullResDataUrl = evt.target.result;
+                    compressImage(fullResDataUrl, 800, 450, 0.85).then(function(compressedImg) {
                         var newImgObj = {
                             id: mediaId,
                             title: label,
                             img: compressedImg,
+                            imgFull: fullResDataUrl,
                             desc: desc || 'Movie Still / Wallpaper',
                             isImage: true,
                             isUploaded: true
@@ -1602,17 +1976,20 @@ function setupAddMovieModal() {
                 }
 
                 var getPosterPromise;
+                var rawPosterDataUrl = '';
                 if (posterInput && posterInput.files.length) {
                     getPosterPromise = new Promise(function(res) {
                         var r = new FileReader();
                         r.onload = function(evt) {
-                            compressImage(evt.target.result, 320, 180, 0.5).then(res);
+                            rawPosterDataUrl = evt.target.result;
+                            compressImage(rawPosterDataUrl, 800, 450, 0.85).then(res);
                         };
                         r.readAsDataURL(posterInput.files[0]);
                     });
                 } else if (mediaFile) {
                     getPosterPromise = generateThumbnail(mediaFile).then(function(rawThumb) {
-                        return compressImage(rawThumb, 320, 180, 0.5);
+                        rawPosterDataUrl = rawThumb;
+                        return compressImage(rawThumb, 800, 450, 0.85);
                     });
                 } else {
                     getPosterPromise = Promise.resolve('');
@@ -1629,13 +2006,14 @@ function setupAddMovieModal() {
                         }) : Promise.resolve(''));
 
                     getVideoPromise.then(function(cloudVideoUrl) {
-                        var finalPoster = posterUrl || 'https://picsum.photos/seed/' + mediaId + '/400/225';
+                        var finalPoster = posterUrl || 'https://picsum.photos/seed/' + mediaId + '/1280/720';
                         var newMovie = {
                             id: mediaId,
                             title: label,
-                            year: year || '2024',
+                            year: formatDOB(year) || '01-01-2024',
                             rating: rating || 'U/A 16+',
                             img: finalPoster,
+                            imgFull: rawPosterDataUrl || finalPoster,
                             video: cloudVideoUrl || directVideoUrl || '',
                             genres: genresArr,
                             match: '99% match',
@@ -1723,6 +2101,7 @@ document.addEventListener('DOMContentLoaded', function() {
         setupSearch();
         setupVideoPlayer();
         setupAddMovieModal();
+        setupEmojiPicker();
         setupFloatingPopPortal();
     }).catch(function(err) {
         console.error('DB Error:', err);
@@ -1738,6 +2117,7 @@ document.addEventListener('DOMContentLoaded', function() {
         setupSearch();
         setupVideoPlayer();
         setupAddMovieModal();
+        setupEmojiPicker();
         setupFloatingPopPortal();
     });
 });

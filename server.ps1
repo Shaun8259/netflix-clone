@@ -37,7 +37,7 @@ $mimeTypes = @{
     ".html" = "text/html; charset=utf-8"
     ".css"  = "text/css; charset=utf-8"
     ".js"   = "application/javascript; charset=utf-8"
-    ".json" = "application/json"
+    ".json" = "application/json; charset=utf-8"
     ".png"  = "image/png"
     ".jpg"  = "image/jpeg"
     ".jpeg" = "image/jpeg"
@@ -70,26 +70,78 @@ try {
             }
 
             if ($request.HttpMethod -eq "POST" -or $request.HttpMethod -eq "PUT") {
-                $reader = New-Object System.IO.StreamReader($request.InputStream, $request.ContentEncoding)
+                $reader = New-Object System.IO.StreamReader($request.InputStream, [System.Text.Encoding]::UTF8)
                 $body = $reader.ReadToEnd()
                 [System.IO.File]::WriteAllText($catalogFile, $body, [System.Text.Encoding]::UTF8)
-                $response.ContentType = "application/json"
-                $response.StatusCode = 200
                 $resBytes = [System.Text.Encoding]::UTF8.GetBytes('{"success":true}')
+                $response.ContentType = "application/json; charset=utf-8"
                 $response.ContentLength64 = $resBytes.Length
-                $response.OutputStream.Write($resBytes, 0, $resBytes.Length)
+                $response.StatusCode = 200
+                if ($request.HttpMethod -ne "HEAD") {
+                    try { $response.OutputStream.Write($resBytes, 0, $resBytes.Length) } catch {}
+                }
             } else {
                 if (Test-Path $catalogFile) {
                     $bytes = [System.IO.File]::ReadAllBytes($catalogFile)
                 } else {
                     $bytes = [System.Text.Encoding]::UTF8.GetBytes('{}')
                 }
-                $response.ContentType = "application/json"
-                $response.StatusCode = 200
+                $response.ContentType = "application/json; charset=utf-8"
                 $response.ContentLength64 = $bytes.Length
-                $response.OutputStream.Write($bytes, 0, $bytes.Length)
+                $response.StatusCode = 200
+                if ($request.HttpMethod -ne "HEAD") {
+                    try { $response.OutputStream.Write($bytes, 0, $bytes.Length) } catch {}
+                }
             }
-            $response.OutputStream.Close()
+            try { $response.OutputStream.Close() } catch {}
+            continue
+        }
+
+        # REAL-TIME VIDEO & MEDIA UPLOAD API ENDPOINT
+        if ($localPath -eq "/api/upload") {
+            $response.Headers.Add("Access-Control-Allow-Origin", "*")
+            $response.Headers.Add("Access-Control-Allow-Methods", "POST, OPTIONS")
+            $response.Headers.Add("Access-Control-Allow-Headers", "Content-Type")
+
+            if ($request.HttpMethod -eq "OPTIONS") {
+                $response.StatusCode = 200
+                try { $response.OutputStream.Close() } catch {}
+                continue
+            }
+
+            if ($request.HttpMethod -eq "POST") {
+                $uploadsDir = Join-Path $root "uploads"
+                if (-not (Test-Path $uploadsDir)) { New-Item -ItemType Directory -Path $uploadsDir | Out-Null }
+
+                $reader = New-Object System.IO.StreamReader($request.InputStream, [System.Text.Encoding]::UTF8)
+                $body = $reader.ReadToEnd()
+                
+                $fileName = "video_" + (Get-Date -Format "yyyyMMddHHmmssfff") + ".mp4"
+                if ($body -match '"filename"\s*:\s*"([^"]+)"') {
+                    $fileName = $matches[1]
+                }
+                
+                if ($body -match '"base64"\s*:\s*"(?:data:[^;]+;base64,)?([^"]+)"') {
+                    $base64Data = $matches[1]
+                    $filePath = Join-Path $uploadsDir $fileName
+                    $bytes = [System.Convert]::FromBase64String($base64Data)
+                    [System.IO.File]::WriteAllBytes($filePath, $bytes)
+
+                    $relUrl = "/uploads/" + $fileName
+                    $resObj = @{ success = $true; url = $relUrl } | ConvertTo-Json
+                    $resBytes = [System.Text.Encoding]::UTF8.GetBytes($resObj)
+
+                    $response.ContentType = "application/json"
+                    $response.ContentLength64 = $resBytes.Length
+                    $response.StatusCode = 200
+                    if ($request.HttpMethod -ne "HEAD") {
+                        try { $response.OutputStream.Write($resBytes, 0, $resBytes.Length) } catch {}
+                    }
+                } else {
+                    $response.StatusCode = 400
+                }
+            }
+            try { $response.OutputStream.Close() } catch {}
             continue
         }
 
@@ -102,22 +154,32 @@ try {
             $contentType = $mimeTypes[$ext]
             if (-not $contentType) { $contentType = "application/octet-stream" }
 
-            $response.ContentType = $contentType
-            $response.StatusCode = 200
-            $response.Headers.Add("Access-Control-Allow-Origin", "*")
-
             $bytes = [System.IO.File]::ReadAllBytes($filePath)
+            $response.Headers.Add("Access-Control-Allow-Origin", "*")
+            $response.Headers.Add("Accept-Ranges", "bytes")
+            $response.ContentType = $contentType
             $response.ContentLength64 = $bytes.Length
-            $response.OutputStream.Write($bytes, 0, $bytes.Length)
+            $response.StatusCode = 200
+            if ($request.HttpMethod -ne "HEAD") {
+                try {
+                    $response.OutputStream.Write($bytes, 0, $bytes.Length)
+                } catch {}
+            }
+            try { $response.OutputStream.Close() } catch {}
+            continue
         } else {
-            $response.StatusCode = 404
             $msg = [System.Text.Encoding]::UTF8.GetBytes("404 Not Found")
+            $response.StatusCode = 404
             $response.ContentType = "text/plain"
             $response.ContentLength64 = $msg.Length
-            $response.OutputStream.Write($msg, 0, $msg.Length)
+            if ($request.HttpMethod -ne "HEAD") {
+                try {
+                    $response.OutputStream.Write($msg, 0, $msg.Length)
+                } catch {}
+            }
+            try { $response.OutputStream.Close() } catch {}
+            continue
         }
-
-        $response.OutputStream.Close()
     }
 } finally {
     $listener.Stop()

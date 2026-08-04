@@ -255,8 +255,27 @@
             <form id="addMovieForm" class="add-movie-form">
                 <div class="form-grid">
                     <div class="form-group full-width">
-                        <label for="movieLabelInput">Title / Label <span class="required">*</span></label>
-                        <input type="text" id="movieLabelInput" placeholder="e.g. IKKA, Stranger Worlds Still" required>
+                        <div class="label-with-emoji">
+                            <label for="movieLabelInput">Title / Label <span class="required">*</span></label>
+                            <button type="button" class="btn-emoji-trigger" id="emojiPickerBtn" title="Insert Emojis">😀 Add Emoji</button>
+                        </div>
+                        <input type="text" id="movieLabelInput" placeholder="e.g. 🖤 Love or Lust ❤️🔥, 😍 Best Moments ✨" required>
+                        <!-- Quick Add Emoji Toolbar -->
+                        <div class="emoji-quick-bar">
+                            <span class="quick-title">Quick Add:</span>
+                            <button type="button" class="emoji-quick-btn" data-emoji="🖤">🖤</button>
+                            <button type="button" class="emoji-quick-btn" data-emoji="❤️">❤️</button>
+                            <button type="button" class="emoji-quick-btn" data-emoji="🔥">🔥</button>
+                            <button type="button" class="emoji-quick-btn" data-emoji="😍">😍</button>
+                            <button type="button" class="emoji-quick-btn" data-emoji="✨">✨</button>
+                            <button type="button" class="emoji-quick-btn" data-emoji="💯">💯</button>
+                            <button type="button" class="emoji-quick-btn" data-emoji="🚀">🚀</button>
+                            <button type="button" class="emoji-quick-btn" data-emoji="🎬">🎬</button>
+                            <button type="button" class="emoji-quick-btn" data-emoji="🍿">🍿</button>
+                            <button type="button" class="emoji-quick-btn" data-emoji="🎵">🎵</button>
+                            <button type="button" class="emoji-quick-btn" data-emoji="🎧">🎧</button>
+                            <button type="button" class="emoji-quick-btn" data-emoji="⭐">⭐</button>
+                        </div>
                     </div>
 
                     <div class="form-group">
@@ -282,8 +301,8 @@
                     </div>
 
                     <div class="form-group">
-                        <label for="movieYearInput">Release Year</label>
-                        <input type="number" id="movieYearInput" value="2024">
+                        <label for="movieYearInput">Release Date (DOB)</label>
+                        <input type="date" id="movieYearInput">
                     </div>
 
                     <div class="form-group">
@@ -346,6 +365,24 @@
 
     <!-- Toast Notification -->
     <div class="toast" id="toast"></div>
+
+    <!-- Interactive Emoji Picker Popover Modal -->
+    <div class="emoji-picker-popover" id="emojiPickerPopover">
+        <div class="emoji-picker-header">
+            <input type="text" id="emojiSearchInput" placeholder="Search emojis (e.g. fire, heart, smile)...">
+            <button type="button" class="emoji-picker-close" id="closeEmojiPickerBtn">✕</button>
+        </div>
+        <div class="emoji-picker-tabs">
+            <button type="button" class="emoji-tab-btn active" data-tab="smileys" title="Smileys & Expressions">😀</button>
+            <button type="button" class="emoji-tab-btn" data-tab="gestures" title="Hands & Gestures">👍</button>
+            <button type="button" class="emoji-tab-btn" data-tab="symbols" title="Hearts & Symbols">❤️</button>
+            <button type="button" class="emoji-tab-btn" data-tab="media" title="Media & Cinema">🎬</button>
+            <button type="button" class="emoji-tab-btn" data-tab="objects" title="Objects & Tech">🚀</button>
+        </div>
+        <div class="emoji-picker-grid" id="emojiPickerGrid">
+            <!-- Dynamically populated by setupEmojiPicker() in script.js -->
+        </div>
+    </div>
 
     <!-- Footer -->
     <footer class="footer">
