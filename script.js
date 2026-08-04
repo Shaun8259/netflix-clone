@@ -384,6 +384,7 @@ function mergeCloudCatalog(data) {
 }
 
 function fetchCloudCatalog() {
+    updateCloudStatus('syncing');
     var isLocalhost = window.location.hostname === 'localhost' || window.location.hostname === '127.0.0.1';
 
     if (isLocalhost) {
@@ -395,6 +396,7 @@ function fetchCloudCatalog() {
             .then(function(data) {
                 if (data && (data.trending || data.images)) {
                     mergeCloudCatalog(data);
+                    updateCloudStatus('connected');
                     return;
                 }
                 throw new Error('Empty local response');
@@ -408,6 +410,7 @@ function fetchCloudCatalog() {
 }
 
 function fetchFromCloud() {
+    updateCloudStatus('syncing');
     return fetch(CLOUD_API_URL, { cache: 'no-cache' })
         .then(function(res) {
             if (!res.ok) throw new Error('Cloud fetch error: ' + res.status);
@@ -415,13 +418,28 @@ function fetchFromCloud() {
         })
         .then(function(data) {
             if (data && typeof data === 'object') {
-                console.log('☁️ Cloud catalog synced for account');
+                console.log('☁️ Cloud catalog synced for all users');
                 mergeCloudCatalog(data);
+                updateCloudStatus('connected');
             }
         })
         .catch(function(err) {
             console.warn('Cloud fetch failed:', err);
+            updateCloudStatus('error');
         });
+}
+
+// ===== CLOUD SYNC STATUS BADGE DRIVER =====
+function updateCloudStatus(state) {
+    var badge = document.getElementById('cloudStatusBadge');
+    var text = document.getElementById('cloudStatusText');
+    if (!badge) return;
+    badge.className = 'cloud-status-badge ' + state;
+    if (text) {
+        if (state === 'connected') text.textContent = '☁️ Connected';
+        else if (state === 'syncing') text.textContent = '☁️ Syncing';
+        else if (state === 'error') text.textContent = '⚠️ Offline';
+    }
 }
 
 function syncCloudCatalog() {
@@ -432,7 +450,20 @@ function syncCloudCatalog() {
     keys.forEach(function(k) {
         if (!Array.isArray(cloudPayload[k])) return;
         cloudPayload[k].forEach(function(item) {
+            // Strip all local-only data that cannot be accessed from other devices
             delete item.videoBase64;
+            // Strip base64 data URIs from img/imgFull — only cloud URLs are shareable
+            if (item.imgFull && typeof item.imgFull === 'string' && item.imgFull.indexOf('data:') === 0) {
+                delete item.imgFull;
+            }
+            if (item.img && typeof item.img === 'string' && item.img.indexOf('data:') === 0) {
+                // If img is base64, replace with placeholder — it can't be shared
+                item.img = 'https://picsum.photos/seed/' + encodeURIComponent(item.id) + '/1280/720';
+            }
+            // Strip local-only video paths that won't work on other devices
+            if (item.video && typeof item.video === 'string' && item.video.indexOf('/uploads/') === 0) {
+                item.video = '';
+            }
         });
     });
 
@@ -441,26 +472,12 @@ function syncCloudCatalog() {
     var payload = JSON.stringify(cloudPayload);
     var payloadKB = (payload.length / 1024).toFixed(1);
 
-    // If payload exceeds 9KB, compress extra fields to prevent 400 Bad Request
-    if (payload.length > 9000) {
-        keys.forEach(function(k) {
-            if (!Array.isArray(cloudPayload[k])) return;
-            cloudPayload[k].forEach(function(item) {
-                if (item.img && typeof item.img === 'string' && item.img.length > 2500) {
-                    item.img = 'https://picsum.photos/seed/' + encodeURIComponent(item.id) + '/1280/720';
-                }
-            });
-        });
-        payload = JSON.stringify(cloudPayload);
-    }
-
     if (catalogChannel) {
         try { catalogChannel.postMessage({ type: 'CATALOG_UPDATED', time: Date.now() }); } catch(e){}
     }
 
     // Sync to local server API silently if available
-    // IMPORTANT: charset=utf-8 is mandatory — without it PowerShell StreamReader
-    // defaults to Windows-1252 and corrupts all multi-byte UTF-8 emoji bytes.
+    // IMPORTANT: charset=utf-8 is mandatory for emoji preservation
     fetch(LOCAL_API_URL, {
         method: 'POST',
         headers: { 'Content-Type': 'application/json; charset=utf-8' },
@@ -470,21 +487,20 @@ function syncCloudCatalog() {
     // Sync to cloud API silently with auto-recreation
     return fetch(CLOUD_API_URL, {
         method: 'PUT',
-        headers: { 'Content-Type': 'application/json' },
+        headers: { 'Content-Type': 'application/json; charset=utf-8' },
         body: payload
     })
     .then(function(res) {
         if (res.status === 404) {
-            // Blob expired: silently create new Blob
             return fetch('https://jsonblob.com/api/jsonBlob', {
                 method: 'POST',
-                headers: { 'Content-Type': 'application/json' },
+                headers: { 'Content-Type': 'application/json; charset=utf-8' },
                 body: payload
             }).then(function(createRes) {
                 console.log('✅ Recreated fresh cloud blob, status:', createRes.status);
             });
         } else if (res.ok) {
-            console.log('✅ Cloud catalog synced silently. Size:', payloadKB + 'KB');
+            console.log('✅ Cloud catalog synced to all users. Size:', payloadKB + 'KB');
         }
     })
     .catch(function(err) {
@@ -1622,56 +1638,64 @@ function uploadVideoToLocalServer(file, progressCallback) {
 }
 
 function uploadVideoToCloud(file, progressCallback) {
-    if (!file) return Promise.resolve('/test_video.mp4');
+    if (!file) return Promise.resolve('');
     var fileSizeMB = (file.size / (1024 * 1024)).toFixed(1);
-    console.log('🚀 Starting video upload:', fileSizeMB + 'MB');
+    console.log('🚀 Starting cloud video upload:', fileSizeMB + 'MB');
 
-    return uploadVideoToLocalServer(file, progressCallback)
-        .catch(function(err) {
-            console.warn('Local server upload unavailable/failed, trying cloud fallback:', err);
-            return new Promise(function(resolve) {
-                var xhr = new XMLHttpRequest();
-                var startTime = Date.now();
+    // PRIMARY: Upload directly to Cloudinary for global access on all devices
+    return new Promise(function(resolve) {
+        var xhr = new XMLHttpRequest();
+        var startTime = Date.now();
 
-                xhr.upload.onprogress = function(e) {
-                    if (e.lengthComputable && typeof progressCallback === 'function') {
-                        var percent = Math.round((e.loaded / e.total) * 100);
-                        var elapsedTimeSec = (Date.now() - startTime) / 1000;
-                        var speedBps = elapsedTimeSec > 0 ? (e.loaded / elapsedTimeSec) : 0;
-                        progressCallback({
-                            percent: percent,
-                            loadedMB: (e.loaded / (1024 * 1024)).toFixed(1),
-                            totalMB: (e.total / (1024 * 1024)).toFixed(1),
-                            speedMBps: (speedBps / (1024 * 1024)).toFixed(1)
-                        });
+        xhr.upload.onprogress = function(e) {
+            if (e.lengthComputable && typeof progressCallback === 'function') {
+                var percent = Math.round((e.loaded / e.total) * 100);
+                var elapsedTimeSec = (Date.now() - startTime) / 1000;
+                var speedBps = elapsedTimeSec > 0 ? (e.loaded / elapsedTimeSec) : 0;
+                progressCallback({
+                    percent: percent,
+                    loadedMB: (e.loaded / (1024 * 1024)).toFixed(1),
+                    totalMB: (e.total / (1024 * 1024)).toFixed(1),
+                    speedMBps: (speedBps / (1024 * 1024)).toFixed(1)
+                });
+            }
+        };
+
+        xhr.onload = function() {
+            if (xhr.status >= 200 && xhr.status < 300) {
+                try {
+                    var json = JSON.parse(xhr.responseText);
+                    if (json && json.secure_url) {
+                        console.log('✅ Video uploaded to Cloudinary:', json.secure_url);
+                        // Also save locally if possible (non-blocking)
+                        uploadVideoToLocalServer(file, function(){}).catch(function(){});
+                        resolve(json.secure_url);
+                        return;
                     }
-                };
+                } catch(e){}
+            }
+            // Cloudinary failed — fall back to local server
+            console.warn('Cloudinary upload failed, trying local server...');
+            uploadVideoToLocalServer(file, progressCallback)
+                .then(resolve)
+                .catch(function() { resolve(''); });
+        };
 
-                xhr.onload = function() {
-                    if (xhr.status >= 200 && xhr.status < 300) {
-                        try {
-                            var json = JSON.parse(xhr.responseText);
-                            if (json && json.secure_url) {
-                                resolve(json.secure_url);
-                                return;
-                            }
-                        } catch(e){}
-                    }
-                    resolve('/test_video.mp4');
-                };
+        xhr.onerror = function() {
+            console.warn('Cloudinary upload network error, trying local server...');
+            uploadVideoToLocalServer(file, progressCallback)
+                .then(resolve)
+                .catch(function() { resolve(''); });
+        };
 
-                xhr.onerror = function() {
-                    resolve('/test_video.mp4');
-                };
+        var formData = new FormData();
+        formData.append('file', file);
+        formData.append('upload_preset', CLOUDINARY_UPLOAD_PRESET);
+        formData.append('resource_type', 'video');
 
-                var formData = new FormData();
-                formData.append('file', file);
-                formData.append('upload_preset', CLOUDINARY_UPLOAD_PRESET);
-
-                xhr.open('POST', CLOUDINARY_VID_URL, true);
-                xhr.send(formData);
-            });
-        });
+        xhr.open('POST', CLOUDINARY_VID_URL, true);
+        xhr.send(formData);
+    });
 }
 
 function uploadVideoToFilebin(file, progressCallback) {
@@ -1936,36 +1960,38 @@ function setupAddMovieModal() {
             var isImageFile = mediaFile ? (mediaFile.type.startsWith('image/') || category === 'images') : (category === 'images');
 
             if (isImageFile && mediaFile) {
-                var reader = new FileReader();
-                reader.onload = function(evt) {
-                    var fullResDataUrl = evt.target.result;
-                    compressImage(fullResDataUrl, 800, 450, 0.85).then(function(compressedImg) {
-                        var newImgObj = {
-                            id: mediaId,
-                            title: label,
-                            img: compressedImg,
-                            imgFull: fullResDataUrl,
-                            desc: desc || 'Movie Still / Wallpaper',
-                            isImage: true,
-                            isUploaded: true
-                        };
+                // Upload image to Cloudinary FIRST for global access on all devices
+                showToast('☁️ Uploading image to cloud...', 'info');
+                uploadImageToCloud(mediaFile).then(function(cloudImgUrl) {
+                    var displayImg = cloudImgUrl || 'https://picsum.photos/seed/' + mediaId + '/1280/720';
+                    var newImgObj = {
+                        id: mediaId,
+                        title: label,
+                        img: displayImg,
+                        imgFull: displayImg,
+                        desc: desc || 'Movie Still / Wallpaper',
+                        isImage: true,
+                        isUploaded: true,
+                        createdAt: Date.now()
+                    };
 
-                        dbSaveMovie({ id: mediaId, movieData: newImgObj, blob: mediaFile }).catch(function(){});
+                    dbSaveMovie({ id: mediaId, movieData: newImgObj, blob: mediaFile }).catch(function(){});
 
-                        if (!movies.images) movies.images = [];
-                        movies.images.unshift(newImgObj);
+                    if (!movies.images) movies.images = [];
+                    movies.images.unshift(newImgObj);
 
-                        updateHeroBanner(newImgObj);
-                        saveLocalCatalog();
-                        renderRows();
-                        closeModal();
+                    updateHeroBanner(newImgObj);
+                    saveLocalCatalog();
+                    renderRows();
+                    closeModal();
 
-                        syncCloudCatalog();
-                        triggerNotification('🖼️ New Image Added', '"' + label + '" uploaded to gallery');
-                        showToast('🎉 Image "' + label + '" published to all users!', 'success');
-                    });
-                };
-                reader.readAsDataURL(mediaFile);
+                    syncCloudCatalog();
+                    triggerNotification('🖼️ New Image Added', '"' + label + '" uploaded to gallery');
+                    showToast('🎉 Image "' + label + '" published to all users!', 'success');
+                }).catch(function(err) {
+                    console.error('Image cloud upload error:', err);
+                    showToast('❌ Image upload failed: ' + err.message, 'error');
+                });
             } else {
                 var genresArr = genresStr ? genresStr.split(',').map(function(s) { return s.trim(); }) : ['Action', 'Drama'];
 
@@ -2006,20 +2032,27 @@ function setupAddMovieModal() {
                         }) : Promise.resolve(''));
 
                     getVideoPromise.then(function(cloudVideoUrl) {
-                        var finalPoster = posterUrl || 'https://picsum.photos/seed/' + mediaId + '/1280/720';
+                        // Upload poster to cloud for global access
+                        var posterCloudPromise = (posterUrl && posterUrl.indexOf('data:') === 0)
+                            ? uploadImageToCloud(posterUrl)
+                            : Promise.resolve(posterUrl);
+
+                        posterCloudPromise.then(function(cloudPosterUrl) {
+                        var finalPoster = cloudPosterUrl || posterUrl || 'https://picsum.photos/seed/' + mediaId + '/1280/720';
                         var newMovie = {
                             id: mediaId,
                             title: label,
                             year: formatDOB(year) || '01-01-2024',
                             rating: rating || 'U/A 16+',
                             img: finalPoster,
-                            imgFull: rawPosterDataUrl || finalPoster,
+                            imgFull: finalPoster,
                             video: cloudVideoUrl || directVideoUrl || '',
                             genres: genresArr,
                             match: '99% match',
                             seasons: mediaFile ? formatFileSize(mediaFile.size) : '4K Ultra HD',
                             desc: desc,
-                            isUploaded: true
+                            isUploaded: true,
+                            createdAt: Date.now()
                         };
 
                         if (mediaFile) {
@@ -2037,6 +2070,7 @@ function setupAddMovieModal() {
                         syncCloudCatalog();
                         triggerNotification('🎬 New Movie Added', '"' + label + '" is now live on HODISHAUNFLIX!');
                         showToast('🎉 Movie "' + label + '" published to all users!', 'success');
+                    }); // end posterCloudPromise
                     });
                 });
             }

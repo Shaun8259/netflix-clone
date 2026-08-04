@@ -12,11 +12,14 @@ try {
 
 $listener = New-Object System.Net.HttpListener
 $listener.Prefixes.Add("http://localhost:$port/")
+if ($lanIP -and $lanIP -ne "localhost") {
+    try { $listener.Prefixes.Add("http://${lanIP}:${port}/") } catch {}
+}
 
 try {
     $listener.Start()
 } catch {
-    Write-Host "Listener already running on port $port"
+    Write-Host "Listener start issue: $($_)"
 }
 
 $localUrl = "http://localhost:" + $port + "/login.html"
