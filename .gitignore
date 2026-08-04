@@ -3,3 +3,8 @@ graphify-out/
 scratch/
 *.log
 .DS_Store
+
+# Exclude large raw media uploads (stored in Cloudinary CDN)
+uploads/
+*.mp4
+*.mov
